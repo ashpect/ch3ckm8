@@ -134,7 +134,6 @@ type Board struct {
 	whiteQueens    uint64
 	whiteKing      uint64
 	whitePieces    uint64
-	canWhiteCastle bool
 
 	blackPawns     uint64
 	blackKnights   uint64
@@ -143,7 +142,6 @@ type Board struct {
 	blackQueens    uint64
 	blackKing      uint64
 	blackPieces    uint64
-	canBlackCastle bool
 
 	allPieces uint64
 }
@@ -515,7 +513,7 @@ func (b *Board) movePiece(initPos, finalPos uint64, pieceType PieceType, isWhite
 		}
 	}
 }
-func (b *Board) getAllLegalMoves(isWhite bool) [][2]uint64 {
+func (b *Board) getAllMoves(isWhite bool) [][2]uint64 {
 	var moves [][2]uint64
 	if isWhite {
 		for i := 0; i < 64; i++ {
@@ -555,6 +553,21 @@ func (b *Board) getAllLegalMoves(isWhite bool) [][2]uint64 {
 	return moves
 }
 
+func (b *Board) getAllLegalMoves(isWhite bool)[][2]uint64{
+	allMoves:=b.getAllMoves(isWhite)
+	for idx, move:=range allMoves{
+		for i:=0;i<64;i++{
+			cur_pos:=1<<uint64(i)
+			if move[1]&cur_pos!=0{
+				wasPieceCaptured, capturedPieceType:=b.makeMove(move[0], cur_pos, isWhite, b.getPieceType(move[0]))
+				if b.isCheck(isWhite){
+					legalMoves=legalMoves[:idx]+legalMoves[idx+1:]
+				}
+				b.unmakeMove(move[0],cur_pos, isWhite, wasPieceCaptured,capturedPieceType)
+			}
+		}
+	}
+}
 // makeMove applies a move to the chess board.
 // It updates the positions of the pieces on the board based on the initial and final positions provided.
 // If the moving piece is white, it updates the whitePieces bitboard accordingly.
@@ -611,7 +624,7 @@ func (b *Board) unmakeMove(initPos, finalPos uint64, isWhite, wasPieceCaptured b
 }
 
 func (b *Board) isCheck(isWhite bool) bool {
-	oppMoves := b.getAllLegalMoves(!isWhite)
+	oppMoves := b.getAllMoves(!isWhite)
 	var kingPos uint64
 	if isWhite {
 		kingPos = b.whiteKing
