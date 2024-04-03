@@ -41,5 +41,5 @@ func init() {
 }
 
 func start() {
-	engine.Tell()
+	engine.Uci(engine.Input())
 }
