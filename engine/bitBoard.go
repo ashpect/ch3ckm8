@@ -410,21 +410,23 @@ func (b *Board) getAllMoves(isWhite bool) [][2]uint64 {
 	return moves
 }
 
-func (b *Board) getAllLegalMoves(isWhite bool)[][2]uint64{
-	allMoves:=b.getAllMoves(isWhite)
-	for idx, move:=range allMoves{
-		for i:=0;i<64;i++{
-			cur_pos:=1<<uint64(i)
-			if move[1]&cur_pos!=0{
-				wasPieceCaptured, capturedPieceType:=b.makeMove(move[0], cur_pos, isWhite, b.getPieceType(move[0]))
-				if b.isCheck(isWhite){
-					legalMoves=legalMoves[:idx]+legalMoves[idx+1:]
+func (b *Board) getAllLegalMoves(isWhite bool) [][2]uint64 {
+	allMoves := b.getAllMoves(isWhite)
+	for idx, move := range allMoves {
+		for i := 0; i < 64; i++ {
+			var cur_pos uint64
+			cur_pos = 1 << uint64(i)
+			if move[1]&cur_pos != 0 {
+				wasPieceCaptured, capturedPieceType := b.makeMove(move[0], cur_pos, isWhite, b.getPieceType(move[0]))
+				if b.isCheck(isWhite) {
+					allMoves = allMoves[:idx] + allMoves[idx+1:]
 				}
-				b.unmakeMove(move[0],cur_pos, isWhite, wasPieceCaptured,capturedPieceType)
+				b.unmakeMove(move[0], cur_pos, isWhite, wasPieceCaptured, capturedPieceType)
 			}
 		}
 	}
 }
+
 // makeMove applies a move to the chess board.
 // It updates the positions of the pieces on the board based on the initial and final positions provided.
 // If the moving piece is white, it updates the whitePieces bitboard accordingly.
