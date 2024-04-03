@@ -419,12 +419,13 @@ func (b *Board) getAllLegalMoves(isWhite bool) [][2]uint64 {
 			if move[1]&cur_pos != 0 {
 				wasPieceCaptured, capturedPieceType := b.makeMove(move[0], cur_pos, isWhite, b.getPieceType(move[0]))
 				if b.isCheck(isWhite) {
-					allMoves = allMoves[:idx] + allMoves[idx+1:]
+					move[1] &= ^cur_pos
 				}
 				b.unmakeMove(move[0], cur_pos, isWhite, wasPieceCaptured, capturedPieceType)
 			}
 		}
 	}
+	return allMoves
 }
 
 // makeMove applies a move to the chess board.
