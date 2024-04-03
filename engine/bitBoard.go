@@ -2,7 +2,7 @@ package engine
 
 import (
 	"fmt"
-	"time"
+	"math"
 )
 
 // PieceType represents the type of a chess piece.
@@ -40,26 +40,109 @@ const (
 	Rook
 	Queen
 	King
+
+	pawn_wt   = 100
+	knight_wt = 320
+	bishop_wt = 330
+	rook_wt   = 500
+	queen_wt  = 900
+	king_wt   = 20000
+)
+
+var (
+	pawn_pos_weight = [64]float64{
+		0, 0, 0, 0, 0, 0, 0, 0,
+		50, 50, 50, 50, 50, 50, 50, 50,
+		10, 10, 20, 30, 30, 20, 10, 10,
+		5, 5, 10, 25, 25, 10, 5, 5,
+		0, 0, 0, 20, 20, 0, 0, 0,
+		5, -5, -10, 0, 0, -10, -5, 5,
+		5, 10, 10, -20, -20, 10, 10, 5,
+		0, 0, 0, 0, 0, 0, 0, 0}
+
+	pawn_pos_weight_eg = [64]float64{
+		0, 0, 0, 0, 0, 0, 0, 0,
+		80, 80, 80, 80, 80, 80, 80, 80,
+		50, 50, 50, 50, 50, 50, 50, 50,
+		30, 30, 30, 30, 30, 30, 30, 30,
+		20, 20, 20, 20, 20, 20, 20, 20,
+		10, 10, 10, 10, 10, 10, 10, 10,
+		10, 10, 10, 10, 10, 10, 10, 10,
+		0, 0, 0, 0, 0, 0, 0, 0}
+
+	knight_pos_weight = [64]float64{-50, -40, -30, -30, -30, -30, -40, -50,
+		-40, -20, 0, 0, 0, 0, -20, -40,
+		-30, 0, 10, 15, 15, 10, 0, -30,
+		-30, 5, 15, 20, 20, 15, 5, -30,
+		-30, 0, 15, 20, 20, 15, 0, -30,
+		-30, 5, 10, 15, 15, 10, 5, -30,
+		-40, -20, 0, 5, 5, 0, -20, -40,
+		-50, -40, -30, -30, -30, -30, -40, -50}
+
+	bishop_pos_weight = [64]float64{-20, -10, -10, -10, -10, -10, -10, -20,
+		-10, 0, 0, 0, 0, 0, 0, -10,
+		-10, 0, 5, 10, 10, 5, 0, -10,
+		-10, 5, 5, 10, 10, 5, 5, -10,
+		-10, 0, 10, 10, 10, 10, 0, -10,
+		-10, 10, 10, 10, 10, 10, 10, -10,
+		-10, 5, 0, 0, 0, 0, 5, -10,
+		-20, -10, -10, -10, -10, -10, -10, -20}
+
+	rook_pos_weight = [64]float64{0, 0, 0, 0, 0, 0, 0, 0,
+		5, 10, 10, 10, 10, 10, 10, 5,
+		-5, 0, 0, 0, 0, 0, 0, -5,
+		-5, 0, 0, 0, 0, 0, 0, -5,
+		-5, 0, 0, 0, 0, 0, 0, -5,
+		-5, 0, 0, 0, 0, 0, 0, -5,
+		-5, 0, 0, 0, 0, 0, 0, -5,
+		0, 0, 0, 5, 5, 0, 0, 0}
+
+	queen_pos_weight = [64]float64{-20, -10, -10, -5, -5, -10, -10, -20,
+		-10, 0, 0, 0, 0, 0, 0, -10,
+		-10, 0, 5, 5, 5, 5, 0, -10,
+		-5, 0, 5, 5, 5, 5, 0, -5,
+		0, 0, 5, 5, 5, 5, 0, -5,
+		-10, 5, 5, 5, 5, 5, 0, -10,
+		-10, 0, 5, 0, 0, 0, 0, -10,
+		-20, -10, -10, -5, -5, -10, -10, -20}
+
+	king_pos_weight = [64]float64{-30, -40, -40, -50, -50, -40, -40, -30,
+		-30, -40, -40, -50, -50, -40, -40, -30,
+		-30, -40, -40, -50, -50, -40, -40, -30,
+		-30, -40, -40, -50, -50, -40, -40, -30,
+		-20, -30, -30, -40, -40, -30, -30, -20,
+		-10, -20, -20, -20, -20, -20, -20, -10,
+		20, 20, 0, 0, 0, 0, 20, 20,
+		20, 30, 10, 0, 0, 10, 30, 20}
+
+	king_pos_weight_eg = [64]float64{-50, -40, -30, -20, -20, -30, -40, -50,
+		-30, -20, -10, 0, 0, -10, -20, -30,
+		-30, -10, 20, 30, 30, 20, -10, -30,
+		-30, -10, 30, 40, 40, 30, -10, -30,
+		-30, -10, 30, 40, 40, 30, -10, -30,
+		-30, -10, 20, 30, 30, 20, -10, -30,
+		-30, -30, 0, 0, 0, 0, -30, -30,
+		-50, -30, -30, -30, -30, -30, -30, -50}
 )
 
 // Board represents the state of the chess board.
 type Board struct {
-	whitePawns   uint64
-	whiteKnights uint64
-	whiteBishops uint64
-	whiteRooks   uint64
-	whiteQueens  uint64
-	whiteKing    uint64
-	whitePieces  uint64
+	whitePawns     uint64
+	whiteKnights   uint64
+	whiteBishops   uint64
+	whiteRooks     uint64
+	whiteQueens    uint64
+	whiteKing      uint64
+	whitePieces    uint64
 	canWhiteCastle bool
-	
-	blackPawns   uint64
-	blackKnights uint64
-	blackBishops uint64
-	blackRooks   uint64
-	blackQueens  uint64
-	blackKing    uint64
-	blackPieces  uint64
+
+	blackPawns     uint64
+	blackKnights   uint64
+	blackBishops   uint64
+	blackRooks     uint64
+	blackQueens    uint64
+	blackKing      uint64
+	blackPieces    uint64
 	canBlackCastle bool
 
 	allPieces uint64
@@ -90,55 +173,55 @@ func (b *Board) Print(bitBoard uint64) {
 	var i uint64
 	for i = 0x8000000000000000; i > 0; i >>= 1 {
 		if b.whitePawns&i != 0 {
-			print("P ")
+			fmt.Printf("P ")
 		} else if b.whiteKnights&i != 0 {
-			print("N ")
+			fmt.Printf("N ")
 		} else if b.whiteBishops&i != 0 {
-			print("B ")
+			fmt.Printf("B ")
 		} else if b.whiteRooks&i != 0 {
-			print("R ")
+			fmt.Printf("R ")
 		} else if b.whiteQueens&i != 0 {
-			print("Q ")
+			fmt.Printf("Q ")
 		} else if b.whiteKing&i != 0 {
-			print("K ")
+			fmt.Printf("K ")
 		} else if b.blackPawns&i != 0 {
-			print("p ")
+			fmt.Printf("p ")
 		} else if b.blackKnights&i != 0 {
-			print("n ")
+			fmt.Printf("n ")
 		} else if b.blackBishops&i != 0 {
-			print("b ")
+			fmt.Printf("b ")
 		} else if b.blackRooks&i != 0 {
-			print("r ")
+			fmt.Printf("r ")
 		} else if b.blackQueens&i != 0 {
-			print("q ")
+			fmt.Printf("q ")
 		} else if b.blackKing&i != 0 {
-			print("k ")
+			fmt.Printf("k ")
 		} else {
 			if bitBoard&i != 0 {
-				print("1 ")
+				fmt.Printf("1 ")
 			} else {
-				print(". ")
+				fmt.Printf(". ")
 			}
 		}
 		if i&rightEdge != 0 {
-			println()
+			fmt.Println()
 		}
 	}
-	println()
+	fmt.Println()
 }
 func printBitBoard(bitBoard uint64) {
 	var i uint64
 	for i = 0x8000000000000000; i > 0; i >>= 1 {
 		if bitBoard&i != 0 {
-			print("1 ")
+			fmt.Printf("1 ")
 		} else {
-			print(". ")
+			fmt.Printf(". ")
 		}
 		if i&rightEdge != 0 {
-			println()
+			fmt.Println()
 		}
 	}
-	println()
+	fmt.Println()
 }
 
 // TODO: Implement threading
@@ -332,10 +415,6 @@ func (b *Board) getKingMoves(piece uint64, isWhite bool) uint64 {
 	return moves
 }
 
-func (b *Board) eval() int {
-	return 0
-}
-
 func (b *Board) getBestMove(isWhite bool) uint64 {
 	return 0
 }
@@ -460,15 +539,15 @@ func (b *Board) getAllLegalMoves(isWhite bool) [][2]uint64 {
 			var cur_pos uint64 = 1 << uint64(i)
 			if b.blackPawns&cur_pos != 0 {
 				moves = append(moves, [2]uint64{cur_pos, b.getPawnMoves(cur_pos, isWhite)})
-			} else if b.blackKnights&uint64(cur_pos) != 0 {
+			} else if b.blackKnights&cur_pos != 0 {
 				moves = append(moves, [2]uint64{cur_pos, b.getKnightMoves(cur_pos, isWhite)})
-			} else if b.blackBishops&uint64(cur_pos) != 0 {
+			} else if b.blackBishops&cur_pos != 0 {
 				moves = append(moves, [2]uint64{cur_pos, b.getBishopMoves(cur_pos, isWhite)})
-			} else if b.blackRooks&uint64(cur_pos) != 0 {
+			} else if b.blackRooks&cur_pos != 0 {
 				moves = append(moves, [2]uint64{cur_pos, b.getRookMoves(cur_pos, isWhite)})
-			} else if b.blackQueens&uint64(cur_pos) != 0 {
+			} else if b.blackQueens&cur_pos != 0 {
 				moves = append(moves, [2]uint64{cur_pos, b.getQueenMoves(cur_pos, isWhite)})
-			} else if b.blackKing&uint64(cur_pos) != 0 {
+			} else if b.blackKing&cur_pos != 0 {
 				moves = append(moves, [2]uint64{cur_pos, b.getKingMoves(cur_pos, isWhite)})
 			}
 		}
@@ -530,14 +609,136 @@ func (b *Board) unmakeMove(initPos, finalPos uint64, isWhite, wasPieceCaptured b
 	}
 	b.allPieces = b.whitePieces | b.blackPieces
 }
-func (b *Board) isMoveValid(initPos, finalPos uint64, isWhite bool) bool {
-	return true
+
+func (b *Board) isCheck(isWhite bool) bool {
+	oppMoves := b.getAllLegalMoves(!isWhite)
+	var kingPos uint64
+	if isWhite {
+		kingPos = b.whiteKing
+	} else {
+		kingPos = b.blackKing
+	}
+	for _, move := range oppMoves {
+		for i := 0; i < 64; i++ {
+			if move[1]&kingPos != 0 {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (b *Board) eval() float64 {
+	var endgameT float64 = 0
+	var materialScore float64 = b.evalMaterialValues()
+	var pstScore float64 = b.evalPieceSquareTables(endgameT)
+	return materialScore + pstScore
+}
+func alphaBetaMiniMax(b Board, isWhite bool, depth int, alpha, beta float64) float64 {
+	if depth == 0 {
+		return b.eval()
+	}
+	if isWhite {
+		var moves = b.getAllLegalMoves(isWhite)
+		for _, move := range moves {
+			for i := 0; i < 64; i++ {
+				if move[1]&(1<<uint64(i)) != 0 {
+					wasPieceCaptured, capturePieceType := b.makeMove(move[0], 1<<uint64(i), isWhite, b.getPieceType(move[0]))
+					alpha = math.Max(alpha, alphaBetaMiniMax(b, !isWhite, depth-1, alpha, beta))
+					b.unmakeMove(move[0], 1<<uint64(i), isWhite, wasPieceCaptured, capturePieceType)
+					if beta <= alpha {
+						break
+					}
+				}
+			}
+		}
+		return alpha
+	} else {
+		var moves = b.getAllLegalMoves(isWhite)
+		for _, move := range moves {
+			for i := 0; i < 64; i++ {
+				if move[1]&(1<<uint64(i)) != 0 {
+					wasPieceCaptured, capturePieceType := b.makeMove(move[0], 1<<uint64(i), isWhite, b.getPieceType(move[0]))
+					beta = math.Min(beta, alphaBetaMiniMax(b, !isWhite, depth-1, alpha, beta))
+					b.unmakeMove(move[0], 1<<uint64(i), isWhite, wasPieceCaptured, capturePieceType)
+					if beta <= alpha {
+						break
+					}
+				}
+			}
+		}
+		return beta
+	}
+}
+func (b *Board) evalMaterialValues() float64 {
+	var score float64 = 0
+	for i := 0; i < 64; i++ {
+		var cur_pos uint64 = 1 << uint64(i)
+		if b.whitePawns&cur_pos != 0 {
+			score += pawn_wt
+		} else if b.whiteKnights&cur_pos != 0 {
+			score += knight_wt
+		} else if b.whiteBishops&cur_pos != 0 {
+			score += bishop_wt
+		} else if b.whiteRooks&cur_pos != 0 {
+			score += rook_wt
+		} else if b.whiteQueens&cur_pos != 0 {
+			score += queen_wt
+		} else if b.whiteKing&cur_pos != 0 {
+			score += king_wt
+		} else if b.blackPawns&cur_pos != 0 {
+			score -= pawn_wt
+		} else if b.blackKnights&cur_pos != 0 {
+			score -= knight_wt
+		} else if b.blackBishops&cur_pos != 0 {
+			score -= bishop_wt
+		} else if b.blackRooks&cur_pos != 0 {
+			score -= rook_wt
+		} else if b.blackQueens&cur_pos != 0 {
+			score -= queen_wt
+		} else if b.blackKing&cur_pos != 0 {
+			score -= king_wt
+		}
+	}
+	return score
+}
+func (b *Board) evalPieceSquareTables(endgameT float64) float64 {
+	var score float64 = 0
+	for i := 0; i < 64; i++ {
+		var cur_pos uint64 = 1 << uint64(i)
+		if b.whitePawns&cur_pos != 0 {
+			score += pawn_pos_weight[63-i]*(1-endgameT) + pawn_pos_weight_eg[63-i]*endgameT
+		} else if b.whiteKnights&cur_pos != 0 {
+			score += knight_pos_weight[63-i]
+		} else if b.whiteBishops&cur_pos != 0 {
+			score += bishop_pos_weight[63-i]
+		} else if b.whiteRooks&cur_pos != 0 {
+			score += rook_pos_weight[63-i]
+		} else if b.whiteQueens&cur_pos != 0 {
+			score += queen_pos_weight[63-i]
+		} else if b.whiteKing&cur_pos != 0 {
+			score += king_pos_weight[63-i]*(1-endgameT) + king_pos_weight_eg[63-i]*endgameT
+		} else if b.blackPawns&cur_pos != 0 {
+			score -= pawn_pos_weight[i]*(1-endgameT) + pawn_pos_weight_eg[i]*endgameT
+		} else if b.blackKnights&cur_pos != 0 {
+			score -= knight_pos_weight[i]
+		} else if b.blackBishops&cur_pos != 0 {
+			score -= bishop_pos_weight[i]
+		} else if b.blackRooks&cur_pos != 0 {
+			score -= rook_pos_weight[i]
+		} else if b.blackQueens&cur_pos != 0 {
+			score -= queen_pos_weight[i]
+		} else if b.blackKing&cur_pos != 0 {
+			score -= king_pos_weight[i]*(1-endgameT) + king_pos_weight_eg[i]*endgameT
+		}
+	}
+	return score
 }
 
 func test() {
 	var b Board
 	b.Init()
-	b.makeMove(0x0000000000001000, 0, true, b.getPieceType(0x0000000000001000))
+	b.Print(0)
 	moves := b.getAllLegalMoves(true)
 	n_moves := 0
 	for _, move := range moves {
@@ -545,19 +746,18 @@ func test() {
 			if move[1]&(1<<uint64(i)) != 0 {
 				wasPieceCaptured, capturePieceType := b.makeMove(move[0], 1<<uint64(i), true, b.getPieceType(move[0]))
 				if wasPieceCaptured {
-					println("Captured: ", capturePieceType)
+					fmt.Println("Captured: ", capturePieceType)
 				}
+				b.Print(0)
+				fmt.Println(b.eval())
 				n_moves++
 				b.unmakeMove(move[0], 1<<uint64(i), true, wasPieceCaptured, capturePieceType)
 			}
 		}
 	}
+	fmt.Println(n_moves)
+
 }
 func main() {
-	start := time.Now()
-	for i := 0; i < 100_000_000; i++ {
-		test()
-	}
-	elapsed := time.Since(start)
-	fmt.Printf("Time: %s", elapsed)
+	test()
 }
