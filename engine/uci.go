@@ -39,6 +39,14 @@ func Uci(frGUI chan string) {
 			handleIsReady()
 		case "stop":
 			handleStop(toEng, &bInfinite)
+		case "test":
+			handleTest(toEng)
+		case "newgame w":
+			toEng <- "w"
+		case "newgame b":
+			toEng <- "b"
+		case "newgame":
+			toEng <- "random"
 		case "quit":
 			quit = true
 			continue
@@ -46,9 +54,14 @@ func Uci(frGUI chan string) {
 	}
 }
 
+func handleTest(toEng chan string) {
+	toEng <- "test"
+	tell("test done")
+}
+
 func handlePosition() {
 	// position [fen <fenstring> | startpos ]  moves <move1> .... <movei>
-	
+
 }
 
 func handleDebugOn() {
