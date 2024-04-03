@@ -267,7 +267,11 @@ func (b *Board) getMoves(position uint64, depth int, dirs uint8, isWhite bool) u
 }
 
 func (b *Board) getBestMove(isWhite bool) uint64 {
-	return 0
+	if isWhite {
+		return 0
+	} else {
+		return 1
+	}
 }
 
 // getPieceType returns the type of a given piece on the chess board.
