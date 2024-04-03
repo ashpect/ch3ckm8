@@ -25,39 +25,77 @@ func (b *Board) Initialize() {
 	b.allPieces = 0xFFFF00000000FFFF
 }
 
-func (b *Board) Print(position bool) {
-	var i uint64
-	for i = 0x8000000000000000; i > 0; i >>= 1 {
-		if b.whitePawns&i != 0 {
-			fmt.Printf("P ")
-		} else if b.whiteKnights&i != 0 {
-			fmt.Printf("N ")
-		} else if b.whiteBishops&i != 0 {
-			fmt.Printf("B ")
-		} else if b.whiteRooks&i != 0 {
-			fmt.Printf("R ")
-		} else if b.whiteQueens&i != 0 {
-			fmt.Printf("Q ")
-		} else if b.whiteKing&i != 0 {
-			fmt.Printf("K ")
-		} else if b.blackPawns&i != 0 {
-			fmt.Printf("p ")
-		} else if b.blackKnights&i != 0 {
-			fmt.Printf("n ")
-		} else if b.blackBishops&i != 0 {
-			fmt.Printf("b ")
-		} else if b.blackRooks&i != 0 {
-			fmt.Printf("r ")
-		} else if b.blackQueens&i != 0 {
-			fmt.Printf("q ")
-		} else if b.blackKing&i != 0 {
-			fmt.Printf("k ")
+func (b *Board) Print(isWhite bool) {
+	if isWhite {
+		var i uint64
+		for i = 0x8000000000000000; i > 0; i >>= 1 {
+			if b.whitePawns&i != 0 {
+				fmt.Printf("P ")
+			} else if b.whiteKnights&i != 0 {
+				fmt.Printf("N ")
+			} else if b.whiteBishops&i != 0 {
+				fmt.Printf("B ")
+			} else if b.whiteRooks&i != 0 {
+				fmt.Printf("R ")
+			} else if b.whiteQueens&i != 0 {
+				fmt.Printf("Q ")
+			} else if b.whiteKing&i != 0 {
+				fmt.Printf("K ")
+			} else if b.blackPawns&i != 0 {
+				fmt.Printf("p ")
+			} else if b.blackKnights&i != 0 {
+				fmt.Printf("n ")
+			} else if b.blackBishops&i != 0 {
+				fmt.Printf("b ")
+			} else if b.blackRooks&i != 0 {
+				fmt.Printf("r ")
+			} else if b.blackQueens&i != 0 {
+				fmt.Printf("q ")
+			} else if b.blackKing&i != 0 {
+				fmt.Printf("k ")
+			}
+			if i&rightEdge != 0 {
+				fmt.Println()
+			}
 		}
-		if i&rightEdge != 0 {
-			fmt.Println()
+		fmt.Println()
+	} else {
+		var i uint64
+		for i = 1; i < 0x8000000000000000; i <<= 1 {
+			if b.whitePawns&i != 0 {
+				fmt.Printf("P ")
+			} else if b.whiteKnights&i != 0 {
+				fmt.Printf("N ")
+			} else if b.whiteBishops&i != 0 {
+				fmt.Printf("B ")
+			} else if b.whiteRooks&i != 0 {
+				fmt.Printf("R ")
+			} else if b.whiteQueens&i != 0 {
+				fmt.Printf("Q ")
+			} else if b.whiteKing&i != 0 {
+				fmt.Printf("K ")
+			} else if b.blackPawns&i != 0 {
+				fmt.Printf("p ")
+			} else if b.blackKnights&i != 0 {
+				fmt.Printf("n ")
+			} else if b.blackBishops&i != 0 {
+				fmt.Printf("b ")
+			} else if b.blackRooks&i != 0 {
+				fmt.Printf("r ")
+			} else if b.blackQueens&i != 0 {
+				fmt.Printf("q ")
+			} else if b.blackKing&i != 0 {
+				fmt.Printf("k ")
+			}
+			if i&leftEdge != 0 {
+				fmt.Println()
+			}
+			if i == 0x8000000000000000 {
+				break
+			}
 		}
+		fmt.Println()
 	}
-	fmt.Println()
 }
 
 func printBitBoard(bitBoard uint64) {
