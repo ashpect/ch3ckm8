@@ -7,12 +7,15 @@ import (
 	"strings"
 )
 
+var saveBm = ""
+
 func Uci(frGUI chan string) {
 
 	tell("Hello from uci")
 
 	frEng, toEng := engine()
 
+	bInfinite := false
 	quit := false
 	cmd := ""
 	bestmove := ""
@@ -35,7 +38,7 @@ func Uci(frGUI chan string) {
 			// just send ready to test
 			handleIsReady()
 		case "stop":
-			toEng <- "stop"
+			handleStop(toEng, &bInfinite)
 		case "quit":
 			quit = true
 			continue
@@ -55,6 +58,24 @@ func handleUci() {
 
 func handleIsReady() {
 	tell("readyok")
+}
+
+func handleStop(toEng chan string, bInfinite *bool) {
+
+	if *bInfinite {
+		// basically if i start engine as go infinite, then i need to send stop command to engine, hence if binfinite is true, then send stop command, which was set true in go command
+		// save best move and don't sent untill stop is given if the engine is in infinite mode, but had finite choices, like mate in one and exited
+		// engine should be clean
+		// from the infinite loop
+		if saveBm != "" {
+			tell(saveBm)
+			saveBm = ""
+		}
+
+		toEng <- "stop"
+		*bInfinite = false
+
+	}
 }
 
 // go routine waits for commands and sends to uci : standard way to use anonymous func as go routines

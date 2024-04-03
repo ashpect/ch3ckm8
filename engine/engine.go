@@ -8,6 +8,7 @@ func engine() (frEng chan string, toEng chan string) {
 		for cmd := range toEng {
 			switch cmd {
 			case "stop":
+				// stop here but keep channel active as engine can stop in case of 1 move away checkmate type conditions and infinite depth initiated by go inifinite
 				frEng <- "stop as text recieves"
 			case "quit":
 				break
