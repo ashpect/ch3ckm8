@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"time"
 )
 
 // PieceType represents the type of a chess piece.
@@ -20,18 +21,18 @@ const (
 	topEdge       uint64 = 0xFF00000000000000
 	topButOneEdge uint64 = 0x00FF000000000000
 
-	diagBackRightRay    uint8 = 1 << 0
-	backRay             uint8 = 1 << 1
-	diagBackLeftRay     uint8 = 1 << 2
-	rightRay            uint8 = 1 << 3
-	leftRay             uint8 = 1 << 4
-	diagForwardRightRay uint8 = 1 << 5
-	forwardRay          uint8 = 1 << 6
-	diagForwardLeftRay  uint8 = 1 << 7
+	diagBackRightDir    uint8 = 1 << 0
+	backDir             uint8 = 1 << 1
+	diagBackLeftDir     uint8 = 1 << 2
+	rightDir            uint8 = 1 << 3
+	leftDir             uint8 = 1 << 4
+	diagForwardRightDir uint8 = 1 << 5
+	forwardDir          uint8 = 1 << 6
+	diagForwardLeftDir  uint8 = 1 << 7
 
-	diagRays     uint8 = diagBackRightRay | diagBackLeftRay | diagForwardRightRay | diagForwardLeftRay
-	straightRays uint8 = backRay | rightRay | leftRay | forwardRay
-	allRays      uint8 = diagRays | straightRays
+	diagDirs     uint8 = diagBackRightDir | diagBackLeftDir | diagForwardRightDir | diagForwardLeftDir
+	straightDirs uint8 = backDir | rightDir | leftDir | forwardDir
+	allDirs      uint8 = diagDirs | straightDirs
 
 	Pawn PieceType = iota + 1
 	Knight
@@ -50,7 +51,8 @@ type Board struct {
 	whiteQueens  uint64
 	whiteKing    uint64
 	whitePieces  uint64
-
+	canWhiteCastle bool
+	
 	blackPawns   uint64
 	blackKnights uint64
 	blackBishops uint64
@@ -58,6 +60,7 @@ type Board struct {
 	blackQueens  uint64
 	blackKing    uint64
 	blackPieces  uint64
+	canBlackCastle bool
 
 	allPieces uint64
 }
@@ -68,34 +71,74 @@ func (b *Board) Init() {
 	b.whiteKnights = 0x0000000000000042
 	b.whiteBishops = 0x0000000000000024
 	b.whiteRooks = 0x0000000000000081
-	b.whiteQueens = 0x0000000000000008
-	b.whiteKing = 0x0000000000000010
+	b.whiteQueens = 0x0000000000000010
+	b.whiteKing = 0x0000000000000008
 	b.whitePieces = 0x000000000000FFFF
 
 	b.blackPawns = 0x00FF000000000000
 	b.blackKnights = 0x4200000000000000
 	b.blackBishops = 0x2400000000000000
 	b.blackRooks = 0x8100000000000000
-	b.blackQueens = 0x0800000000000000
-	b.blackKing = 0x1000000000000000
-	b.blackPieces = 0xFFFF0000000000
+	b.blackQueens = 0x1000000000000000
+	b.blackKing = 0x0800000000000000
+	b.blackPieces = 0xFFFF000000000000
 
 	b.allPieces = 0xFFFF00000000FFFF
 }
 
-// printBitBoard prints the binary representation of a given bitboard.
+func (b *Board) Print(bitBoard uint64) {
+	var i uint64
+	for i = 0x8000000000000000; i > 0; i >>= 1 {
+		if b.whitePawns&i != 0 {
+			print("P ")
+		} else if b.whiteKnights&i != 0 {
+			print("N ")
+		} else if b.whiteBishops&i != 0 {
+			print("B ")
+		} else if b.whiteRooks&i != 0 {
+			print("R ")
+		} else if b.whiteQueens&i != 0 {
+			print("Q ")
+		} else if b.whiteKing&i != 0 {
+			print("K ")
+		} else if b.blackPawns&i != 0 {
+			print("p ")
+		} else if b.blackKnights&i != 0 {
+			print("n ")
+		} else if b.blackBishops&i != 0 {
+			print("b ")
+		} else if b.blackRooks&i != 0 {
+			print("r ")
+		} else if b.blackQueens&i != 0 {
+			print("q ")
+		} else if b.blackKing&i != 0 {
+			print("k ")
+		} else {
+			if bitBoard&i != 0 {
+				print("1 ")
+			} else {
+				print(". ")
+			}
+		}
+		if i&rightEdge != 0 {
+			println()
+		}
+	}
+	println()
+}
 func printBitBoard(bitBoard uint64) {
 	var i uint64
 	for i = 0x8000000000000000; i > 0; i >>= 1 {
 		if bitBoard&i != 0 {
-			fmt.Print("1")
+			print("1 ")
 		} else {
-			fmt.Print("0")
+			print(". ")
 		}
-		if i&0x0101010101010101 != 0 {
-			fmt.Println()
+		if i&rightEdge != 0 {
+			println()
 		}
 	}
+	println()
 }
 
 // TODO: Implement threading
@@ -104,7 +147,7 @@ func printBitBoard(bitBoard uint64) {
 // a pointer to the board, and a flag indicating whether the piece is white or not.
 // It returns a bitboard representing the possible moves for the piece,
 // where a 1 represents a possible move and a 0 represents an impossible move.
-func getMoves(piece uint64, depth int, rays uint8, b *Board, isWhite bool) uint64 {
+func (b *Board) getMoves(piece uint64, depth int, dirs uint8, isWhite bool) uint64 {
 
 	var moves, pre_comp, sameColorPieces uint64
 
@@ -125,71 +168,71 @@ func getMoves(piece uint64, depth int, rays uint8, b *Board, isWhite bool) uint6
 	// and stopping exploring a direction when a piece is found or an edge is hit
 	// or the depth is reached
 	for i := 1; i < depth+1; i++ {
-		if rays&diagBackRightRay != 0 {
+		if dirs&diagBackRightDir != 0 {
 
 			// Move the piece to the right and down unless it is on the right edge already
 			pre_comp = (piece & ^rightEdge >> (9 * i))
 
 			// If a piece is found or an edge is hit, stop exploring the direction
 			if pre_comp&(rightCheck) != 0 || pre_comp == 0 {
-				rays &= ^diagBackRightRay
+				dirs &= ^diagBackRightDir
 			}
 
 			// Add the possible moves to the moves bitboard
 			moves |= pre_comp & ^sameColorPieces
 		}
 
-		if rays&backRay != 0 {
+		if dirs&backDir != 0 {
 			pre_comp = (piece >> (8 * i))
 			if pre_comp&(bottomCheck) != 0 || pre_comp == 0 {
-				rays &= ^backRay
+				dirs &= ^backDir
 			}
 			moves |= pre_comp & ^sameColorPieces
 		}
 
-		if rays&diagBackLeftRay != 0 {
+		if dirs&diagBackLeftDir != 0 {
 			pre_comp = ((piece & ^leftEdge) >> (7 * i))
 			if pre_comp&(leftCheck) != 0 || pre_comp == 0 {
-				rays &= ^diagBackLeftRay
+				dirs &= ^diagBackLeftDir
 			}
 			moves |= pre_comp & ^sameColorPieces
 		}
 
-		if rays&rightRay != 0 {
+		if dirs&rightDir != 0 {
 			pre_comp = ((piece &^ rightEdge) >> i)
 			if pre_comp&(rightCheck) != 0 || pre_comp == 0 {
-				rays &= ^rightRay
+				dirs &= ^rightDir
 			}
 			moves |= pre_comp & ^sameColorPieces
 		}
 
-		if rays&leftRay != 0 {
+		if dirs&leftDir != 0 {
 			pre_comp = ((piece & ^leftEdge) << i)
 			if pre_comp&(leftCheck) != 0 || pre_comp == 0 {
-				rays &= ^leftRay
+				dirs &= ^leftDir
 			}
 			moves |= pre_comp & ^sameColorPieces
 		}
 
-		if rays&diagForwardRightRay != 0 {
+		if dirs&diagForwardRightDir != 0 {
 			pre_comp = ((piece & ^rightEdge) << (7 * i))
 			if pre_comp&(rightCheck) != 0 || pre_comp == 0 {
-				rays &= ^diagForwardRightRay
+				dirs &= ^diagForwardRightDir
 			}
 			moves |= pre_comp & ^sameColorPieces
 		}
-		if rays&forwardRay != 0 {
+		if dirs&forwardDir != 0 {
 			pre_comp = (piece << (8 * i))
 			if pre_comp&(topCheck) != 0 || pre_comp == 0 {
-				rays &= ^forwardRay
+				dirs &= ^forwardDir
 			}
 			moves |= pre_comp & ^sameColorPieces
 		}
 
-		if rays&diagForwardLeftRay != 0 {
+		if dirs&diagForwardLeftDir != 0 {
 			pre_comp = ((piece & ^leftEdge) << (9 * i))
 			if pre_comp&(leftCheck) != 0 || pre_comp == 0 {
-				rays &= ^diagForwardLeftRay
+				dirs &= ^diagForwardLeftDir
 			}
 			moves |= pre_comp & ^sameColorPieces
 		}
@@ -204,26 +247,26 @@ func getMoves(piece uint64, depth int, rays uint8, b *Board, isWhite bool) uint6
 // The function also handles the special case of pawn's initial double move.
 // It returns a bitboard representing the possible moves for the pawn.
 // TODO: Implement en passant
-func getPawnMoves(piece uint64, b *Board, isWhite bool) uint64 {
+func (b *Board) getPawnMoves(piece uint64, isWhite bool) uint64 {
 	if isWhite {
-		var moves uint64 = getMoves(piece, 1, diagForwardLeftRay|diagForwardRightRay, b, isWhite)
+		var moves uint64 = b.getMoves(piece, 1, diagForwardLeftDir|diagForwardRightDir, isWhite) & b.blackPieces
 
 		// If the pawn is on the second rank, it can move two squares forward
 		if piece&bottomButOneEdge != 0 {
-			moves |= getMoves(piece, 2, forwardRay, b, isWhite) &^ b.allPieces
+			moves |= b.getMoves(piece, 2, forwardDir, isWhite) &^ b.allPieces
 		} else {
-			moves |= getMoves(piece, 1, forwardRay, b, isWhite) &^ b.allPieces
+			moves |= b.getMoves(piece, 1, forwardDir, isWhite) &^ b.allPieces
 		}
 		return moves
 
 	} else {
-		var moves uint64 = getMoves(piece, 1, diagBackLeftRay|diagBackRightRay, b, isWhite)
+		var moves uint64 = b.getMoves(piece, 1, diagBackLeftDir|diagBackRightDir, isWhite) & b.whitePieces
 
 		// If the pawn is on the seventh rank, it can move two squares forward
 		if piece&topButOneEdge != 0 {
-			moves |= getMoves(piece, 2, backRay, b, isWhite) &^ b.allPieces
+			moves |= b.getMoves(piece, 2, backDir, isWhite) &^ b.allPieces
 		} else {
-			moves |= getMoves(piece, 1, backRay, b, isWhite) &^ b.allPieces
+			moves |= b.getMoves(piece, 1, backDir, isWhite) &^ b.allPieces
 		}
 		return moves
 	}
@@ -234,8 +277,8 @@ func getPawnMoves(piece uint64, b *Board, isWhite bool) uint64 {
 // It takes the piece position, the board, and a flag indicating whether the piece is white or not.
 // The function uses the getMoves helper function to calculate the possible moves in all four directions (up, down, left, right).
 // The resulting moves are returned as a bitboard.
-func getRookMoves(piece uint64, b *Board, isWhite bool) uint64 {
-	var moves uint64 = getMoves(piece, 8, straightRays, b, isWhite)
+func (b *Board) getRookMoves(piece uint64, isWhite bool) uint64 {
+	var moves uint64 = b.getMoves(piece, 7, straightDirs, isWhite)
 	return moves
 }
 
@@ -243,23 +286,23 @@ func getRookMoves(piece uint64, b *Board, isWhite bool) uint64 {
 // It takes the position of the bishop piece, the board, and a flag indicating whether the bishop is white or not.
 // The function calculates the possible moves by calling the getMoves function with the appropriate parameters.
 // It returns a bitboard representing the possible moves for the bishop.
-func getBishopMoves(piece uint64, b *Board, isWhite bool) uint64 {
-	var moves uint64 = getMoves(piece, 8, diagRays, b, isWhite)
+func (b *Board) getBishopMoves(piece uint64, isWhite bool) uint64 {
+	var moves uint64 = b.getMoves(piece, 7, diagDirs, isWhite)
 	return moves
 }
 
 // getQueenMoves returns the possible moves for a queen piece on the board.
 // It takes the current position of the queen piece, the board state, and a flag indicating whether the piece is white or not.
 // The function calculates and returns a bitboard representing the possible moves for the queen.
-func getQueenMoves(piece uint64, b *Board, isWhite bool) uint64 {
-	var moves uint64 = getMoves(piece, 8, allRays, b, isWhite)
+func (b *Board) getQueenMoves(piece uint64, isWhite bool) uint64 {
+	var moves uint64 = b.getMoves(piece, 7, allDirs, isWhite)
 	return moves
 }
 
 // getKnightMoves calculates the possible knight moves for a given piece on the board.
 // It takes the piece's position, the board, and a flag indicating whether the piece is white or not.
 // It returns a bitboard representing the possible knight moves.
-func getKnightMoves(piece uint64, b *Board, isWhite bool) uint64 {
+func (b *Board) getKnightMoves(piece uint64, isWhite bool) uint64 {
 	var moves uint64
 	var sameColorPieces uint64
 	if isWhite {
@@ -284,16 +327,16 @@ func getKnightMoves(piece uint64, b *Board, isWhite bool) uint64 {
 // It takes the position of the king piece, the board, and a flag indicating whether the king is white or not.
 // The function calculates the possible moves by using the getMoves function with the appropriate parameters.
 // It returns a bitboard representing the possible moves for the king.
-func getKingMoves(piece uint64, b *Board, isWhite bool) uint64 {
-	var moves uint64 = getMoves(piece, 1, allRays, b, isWhite)
+func (b *Board) getKingMoves(piece uint64, isWhite bool) uint64 {
+	var moves uint64 = b.getMoves(piece, 1, allDirs, isWhite)
 	return moves
 }
 
-func evalBoard(b *Board, isWhite bool) int {
+func (b *Board) eval() int {
 	return 0
 }
 
-func getBestMove(b *Board) uint64 {
+func (b *Board) getBestMove(isWhite bool) uint64 {
 	return 0
 }
 
@@ -301,18 +344,18 @@ func getBestMove(b *Board) uint64 {
 // It takes a piece and a pointer to the Board struct as input.
 // It checks the piece against the bitboards of each piece type and returns the corresponding PieceType.
 // If the piece does not match any of the bitboards, it returns 0.
-func getPieceType(piece uint64, b *Board) PieceType {
-	if piece&b.whitePawns != 0 || piece&b.blackPawns != 0 {
+func (b *Board) getPieceType(pos uint64) PieceType {
+	if pos&b.whitePawns != 0 || pos&b.blackPawns != 0 {
 		return Pawn
-	} else if piece&b.whiteKnights != 0 || piece&b.blackKnights != 0 {
+	} else if pos&b.whiteKnights != 0 || pos&b.blackKnights != 0 {
 		return Knight
-	} else if piece&b.whiteBishops != 0 || piece&b.blackBishops != 0 {
+	} else if pos&b.whiteBishops != 0 || pos&b.blackBishops != 0 {
 		return Bishop
-	} else if piece&b.whiteRooks != 0 || piece&b.blackRooks != 0 {
+	} else if pos&b.whiteRooks != 0 || pos&b.blackRooks != 0 {
 		return Rook
-	} else if piece&b.whiteQueens != 0 || piece&b.blackQueens != 0 {
+	} else if pos&b.whiteQueens != 0 || pos&b.blackQueens != 0 {
 		return Queen
-	} else if piece&b.whiteKing != 0 || piece&b.blackKing != 0 {
+	} else if pos&b.whiteKing != 0 || pos&b.blackKing != 0 {
 		return King
 	}
 	return 0
@@ -322,9 +365,12 @@ func getPieceType(piece uint64, b *Board) PieceType {
 // It takes a pointer to a Board struct, the initial position, final position, piece type, and a boolean indicating whether the piece is white.
 // If the piece is white, it updates the corresponding white piece bitboard based on the piece type.
 // If the piece is black, it updates the corresponding black piece bitboard based on the piece type.
-func updatePieceTypeOnBoard(b *Board, initPos, finalPos uint64, pieceType PieceType, isWhite bool) {
+func (b *Board) movePiece(initPos, finalPos uint64, pieceType PieceType, isWhite bool) {
 
 	if isWhite {
+		b.whitePieces &= ^initPos
+		b.whitePieces |= finalPos
+		b.allPieces = b.whitePieces | b.blackPieces
 		if pieceType == Pawn {
 
 			b.whitePawns &= ^initPos
@@ -356,6 +402,9 @@ func updatePieceTypeOnBoard(b *Board, initPos, finalPos uint64, pieceType PieceT
 		}
 
 	} else {
+		b.blackPieces &= ^initPos
+		b.blackPieces |= finalPos
+		b.allPieces = b.whitePieces | b.blackPieces
 		if pieceType == Pawn {
 
 			b.blackPawns &= ^initPos
@@ -387,50 +436,128 @@ func updatePieceTypeOnBoard(b *Board, initPos, finalPos uint64, pieceType PieceT
 		}
 	}
 }
+func (b *Board) getAllLegalMoves(isWhite bool) [][2]uint64 {
+	var moves [][2]uint64
+	if isWhite {
+		for i := 0; i < 64; i++ {
+			var cur_pos uint64 = 1 << uint64(i)
+			if b.whitePawns&cur_pos != 0 {
+				moves = append(moves, [2]uint64{cur_pos, b.getPawnMoves(cur_pos, isWhite)})
+			} else if b.whiteKnights&cur_pos != 0 {
+				moves = append(moves, [2]uint64{cur_pos, b.getKnightMoves(cur_pos, isWhite)})
+			} else if b.whiteBishops&cur_pos != 0 {
+				moves = append(moves, [2]uint64{cur_pos, b.getBishopMoves(cur_pos, isWhite)})
+			} else if b.whiteRooks&cur_pos != 0 {
+				moves = append(moves, [2]uint64{cur_pos, b.getRookMoves(cur_pos, isWhite)})
+			} else if b.whiteQueens&cur_pos != 0 {
+				moves = append(moves, [2]uint64{cur_pos, b.getQueenMoves(cur_pos, isWhite)})
+			} else if b.whiteKing&cur_pos != 0 {
+				moves = append(moves, [2]uint64{cur_pos, b.getKingMoves(cur_pos, isWhite)})
+			}
+		}
+	} else {
+		for i := 0; i < 64; i++ {
+			var cur_pos uint64 = 1 << uint64(i)
+			if b.blackPawns&cur_pos != 0 {
+				moves = append(moves, [2]uint64{cur_pos, b.getPawnMoves(cur_pos, isWhite)})
+			} else if b.blackKnights&uint64(cur_pos) != 0 {
+				moves = append(moves, [2]uint64{cur_pos, b.getKnightMoves(cur_pos, isWhite)})
+			} else if b.blackBishops&uint64(cur_pos) != 0 {
+				moves = append(moves, [2]uint64{cur_pos, b.getBishopMoves(cur_pos, isWhite)})
+			} else if b.blackRooks&uint64(cur_pos) != 0 {
+				moves = append(moves, [2]uint64{cur_pos, b.getRookMoves(cur_pos, isWhite)})
+			} else if b.blackQueens&uint64(cur_pos) != 0 {
+				moves = append(moves, [2]uint64{cur_pos, b.getQueenMoves(cur_pos, isWhite)})
+			} else if b.blackKing&uint64(cur_pos) != 0 {
+				moves = append(moves, [2]uint64{cur_pos, b.getKingMoves(cur_pos, isWhite)})
+			}
+		}
+	}
+	return moves
+}
 
-// applyMove applies a move to the chess board.
+// makeMove applies a move to the chess board.
 // It updates the positions of the pieces on the board based on the initial and final positions provided.
 // If the moving piece is white, it updates the whitePieces bitboard accordingly.
 // If the moving piece is black, it updates the blackPieces bitboard accordingly.
 // If a piece of the opposite color is taken during the move, it updates the respective bitboard and piece type.
 // Finally, it updates the allPieces bitboard to reflect the new positions of all the pieces on the board.
-func applyMove(b *Board, initPos, finalPos uint64, isWhite bool, pieceType PieceType) {
+func (b *Board) makeMove(initPos, finalPos uint64, isWhite bool, pieceType PieceType) (bool, PieceType) {
 	if isWhite {
-		b.whitePieces &= ^initPos
-		b.whitePieces |= finalPos
-
 		// If a black piece is taken
-		if finalPos&b.blackPieces != 0 {
+		var wasPieceCaptured bool = (finalPos&b.blackPieces != 0)
+		var capturedPieceType PieceType = 0
+		if wasPieceCaptured {
 			b.blackPieces &= ^finalPos
-			blackPieceType := getPieceType(finalPos, b)
-			updatePieceTypeOnBoard(b, initPos, finalPos, blackPieceType, !isWhite)
+			capturedPieceType = b.getPieceType(finalPos)
+			b.movePiece(finalPos, 0, capturedPieceType, !isWhite)
 		}
-		updatePieceTypeOnBoard(b, initPos, finalPos, pieceType, isWhite)
+		b.movePiece(initPos, finalPos, pieceType, isWhite)
+		return wasPieceCaptured, capturedPieceType
 
 	} else {
-		b.blackPieces &= ^initPos
-		b.blackPieces |= finalPos
-
 		// If a white piece is taken
-		if finalPos&b.whitePieces != 0 {
+		var wasPieceCaptured bool = (finalPos&b.whitePieces != 0)
+		var capturedPieceType PieceType = 0
+		if wasPieceCaptured {
 			b.whitePieces &= ^finalPos
-			whitePieceType := getPieceType(finalPos, b)
-			updatePieceTypeOnBoard(b, initPos, finalPos, whitePieceType, !isWhite)
+			capturedPieceType = b.getPieceType(finalPos)
+			b.movePiece(finalPos, 0, capturedPieceType, !isWhite)
 		}
-		updatePieceTypeOnBoard(b, initPos, finalPos, pieceType, isWhite)
+		b.movePiece(initPos, finalPos, pieceType, isWhite)
+		return wasPieceCaptured, capturedPieceType
+	}
+}
 
+// unmakeMove takes the initial position, final position, and other parameters of a move and reverts the board state to the previous state.
+// Parameters:
+// - initPos: The initial position of the piece being moved.
+// - finalPos: The final position of the piece being moved.
+// - wasPieceCaptured: A boolean indicating whether a piece was captured during the move.
+// - isWhite: A boolean indicating whether the moving piece is white.
+// - capturedPieceType: The type of the captured piece, if any.
+func (b *Board) unmakeMove(initPos, finalPos uint64, isWhite, wasPieceCaptured bool, capturedPieceType PieceType) {
+	if isWhite {
+		b.movePiece(finalPos, initPos, b.getPieceType(finalPos), isWhite)
+		if wasPieceCaptured {
+			b.movePiece(0, finalPos, capturedPieceType, !isWhite)
+		}
+	} else {
+		b.movePiece(finalPos, initPos, b.getPieceType(finalPos), isWhite)
+		if wasPieceCaptured {
+			b.movePiece(0, finalPos, capturedPieceType, !isWhite)
+		}
 	}
 	b.allPieces = b.whitePieces | b.blackPieces
 }
-
-func isMoveValid(b *Board, initPos, finalPos uint64, isWhite bool) bool {
+func (b *Board) isMoveValid(initPos, finalPos uint64, isWhite bool) bool {
 	return true
 }
 
-func main() {
+func test() {
 	var b Board
 	b.Init()
-	printBitBoard(b.allPieces)
-	printBitBoard(getKnightMoves(0x000000000200000, &b, true))
-
+	b.makeMove(0x0000000000001000, 0, true, b.getPieceType(0x0000000000001000))
+	moves := b.getAllLegalMoves(true)
+	n_moves := 0
+	for _, move := range moves {
+		for i := 0; i < 64; i++ {
+			if move[1]&(1<<uint64(i)) != 0 {
+				wasPieceCaptured, capturePieceType := b.makeMove(move[0], 1<<uint64(i), true, b.getPieceType(move[0]))
+				if wasPieceCaptured {
+					println("Captured: ", capturePieceType)
+				}
+				n_moves++
+				b.unmakeMove(move[0], 1<<uint64(i), true, wasPieceCaptured, capturePieceType)
+			}
+		}
+	}
+}
+func main() {
+	start := time.Now()
+	for i := 0; i < 100_000_000; i++ {
+		test()
+	}
+	elapsed := time.Since(start)
+	fmt.Printf("Time: %s", elapsed)
 }
