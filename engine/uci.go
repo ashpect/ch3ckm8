@@ -24,7 +24,7 @@ func Uci(frGUI chan string) {
 		select {
 		case cmd = <-frGUI:
 		case bestmove = <-frEng:
-			tell(bestmove)
+			handleBm(bestmove, &bInfinite)
 			continue
 		}
 		switch cmd {
@@ -46,6 +46,11 @@ func Uci(frGUI chan string) {
 	}
 }
 
+func handlePosition() {
+	// position [fen <fenstring> | startpos ]  moves <move1> .... <movei>
+	
+}
+
 func handleDebugOn() {
 	tell("info string debug on")
 }
@@ -62,6 +67,7 @@ func handleIsReady() {
 
 func handleStop(toEng chan string, bInfinite *bool) {
 
+	// stop not valid if engine is not in infinite mode
 	if *bInfinite {
 		// basically if i start engine as go infinite, then i need to send stop command to engine, hence if binfinite is true, then send stop command, which was set true in go command
 		// save best move and don't sent untill stop is given if the engine is in infinite mode, but had finite choices, like mate in one and exited
@@ -75,6 +81,14 @@ func handleStop(toEng chan string, bInfinite *bool) {
 		toEng <- "stop"
 		*bInfinite = false
 
+	}
+}
+
+func handleBm(bestmove string, binfinite *bool) {
+	if *binfinite {
+		saveBm = bestmove
+	} else {
+		tell(bestmove)
 	}
 }
 
