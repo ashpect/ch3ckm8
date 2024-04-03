@@ -412,7 +412,7 @@ func (b *Board) getAllMoves(isWhite bool) [][2]uint64 {
 
 func (b *Board) getAllLegalMoves(isWhite bool) [][2]uint64 {
 	allMoves := b.getAllMoves(isWhite)
-	for idx, move := range allMoves {
+	for _, move := range allMoves {
 		for i := 0; i < 64; i++ {
 			var cur_pos uint64
 			cur_pos = 1 << uint64(i)
