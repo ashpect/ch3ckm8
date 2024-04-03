@@ -12,6 +12,26 @@ func engine() (frEng chan string, toEng chan string) {
 				frEng <- "stop as text recieves"
 			case "quit":
 				break
+			case "test":
+				test()
+				frEng <- "test done"
+			case "w":
+				var b Board
+				b.Initialize()
+				b.Print(true)
+				frEng <- "new board initialized, you are playing white"
+			case "b":
+				var b Board
+				b.Initialize()
+				b.Print(false)
+				frEng <- "new board initialized, you are playing black"
+			case "random":
+				var b Board
+				b.Initialize()
+				// randomNumber := rand.Intn(2)
+				// randomBool := randomNumber == 1
+				b.Print(false)
+				frEng <- "new board initialized, you are playing "
 			}
 		}
 	}()
