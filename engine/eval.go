@@ -76,11 +76,11 @@ var (
 		-50, -30, -30, -30, -30, -30, -30, -50}
 )
 
-func (b *Board) eval() float64 {
+func (b *Board) eval() (float64, float64) {
 	var endgameT float64 = 0
 	var materialScore float64 = b.evalMaterialValues()
 	var pstScore float64 = b.evalPieceSquareTables(endgameT)
-	return materialScore + pstScore
+	return materialScore, pstScore
 }
 
 func (b *Board) evalMaterialValues() float64 {

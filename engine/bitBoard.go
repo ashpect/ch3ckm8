@@ -53,6 +53,8 @@ func (b *Board) Print(isWhite bool) {
 				fmt.Printf("q ")
 			} else if b.blackKing&i != 0 {
 				fmt.Printf("k ")
+			} else {
+				fmt.Printf(". ")
 			}
 			if i&rightEdge != 0 {
 				fmt.Println()
@@ -61,7 +63,7 @@ func (b *Board) Print(isWhite bool) {
 		fmt.Println()
 	} else {
 		var i uint64
-		for i = 1; i < 0x8000000000000000; i <<= 1 {
+		for i = 1; i <= 0x8000000000000000; i <<= 1 {
 			if b.whitePawns&i != 0 {
 				fmt.Printf("P ")
 			} else if b.whiteKnights&i != 0 {
@@ -86,6 +88,8 @@ func (b *Board) Print(isWhite bool) {
 				fmt.Printf("q ")
 			} else if b.blackKing&i != 0 {
 				fmt.Printf("k ")
+			} else {
+				fmt.Printf(". ")
 			}
 			if i&leftEdge != 0 {
 				fmt.Println()
@@ -472,6 +476,8 @@ func (b *Board) getAllLegalMoves(isWhite bool) [][2]uint64 {
 // If the moving piece is black, it updates the blackPieces bitboard accordingly.
 // If a piece of the opposite color is taken during the move, it updates the respective bitboard and piece type.
 // Finally, it updates the allPieces bitboard to reflect the new positions of all the pieces on the board.
+
+// returns a boolean indicating whether a piece was captured during the move and the type of the captured piece.
 func (b *Board) makeMove(initPos, finalPos uint64, isWhite bool, pieceType PieceType) (bool, PieceType) {
 	if isWhite {
 		// If a black piece is taken
@@ -560,4 +566,9 @@ func test() {
 		}
 	}
 	fmt.Println(n_moves)
+}
+
+// check if the game has end or not
+func (b *Board) isCheckmate() bool {
+	return false
 }

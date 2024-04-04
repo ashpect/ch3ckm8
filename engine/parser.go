@@ -34,7 +34,7 @@ func parse(fen string) Board {
 	var b Board
 	b.Empty()
 
-	fen = "2k1r1r1/p2q1p2/B1p5/3b3p/3Q4/5PP1/PP3K1P/R2R4 b - - 1 22"
+	// test fen = "2k1r1r1/p2q1p2/B1p5/3b3p/3Q4/5PP1/PP3K1P/R2R4 b - - 1 22"
 
 	a := strings.Split(fen, " ")
 	var curpos int = 63
@@ -65,8 +65,5 @@ func parse(fen string) Board {
 			curpos--
 		}
 	}
-
-	b.Print(true)
-
 	return b
 }

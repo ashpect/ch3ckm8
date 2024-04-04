@@ -47,6 +47,13 @@ func Uci(frGUI chan string) {
 			toEng <- "b"
 		case "newgame":
 			toEng <- "random"
+		case "eval":
+			toEng <- "eval"
+		default:
+			if strings.HasPrefix(cmd, "position ") {
+				otherString := strings.TrimPrefix(cmd, "position ")
+				handlePosition(toEng, otherString)
+			}
 		case "quit":
 			quit = true
 			continue
@@ -54,14 +61,13 @@ func Uci(frGUI chan string) {
 	}
 }
 
+func handlePosition(toEng chan string, otherString string) {
+	toEng <- "fen " + otherString
+}
+
 func handleTest(toEng chan string) {
 	toEng <- "test"
 	tell("test done")
-}
-
-func handlePosition() {
-	// position [fen <fenstring> | startpos ]  moves <move1> .... <movei>
-
 }
 
 func handleDebugOn() {
