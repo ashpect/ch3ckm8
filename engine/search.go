@@ -35,3 +35,8 @@ func (b *Board) alphaBetaMiniMax(isWhite bool, depth int) (float64, [2]uint64) {
 	}
 
 }
+
+//DO
+func(b *Board) searchToMove(moves [2]uint) (string) {
+	return ""
+}
