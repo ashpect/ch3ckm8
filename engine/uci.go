@@ -53,12 +53,19 @@ func Uci(frGUI chan string) {
 			if strings.HasPrefix(cmd, "position ") {
 				otherString := strings.TrimPrefix(cmd, "position ")
 				handlePosition(toEng, otherString)
+			} else if strings.HasPrefix(cmd, "move ") {
+				otherString := strings.TrimPrefix(cmd, "move ")
+				handleMove(toEng, otherString)
 			}
 		case "quit":
 			quit = true
 			continue
 		}
 	}
+}
+
+func handleMove(toEng chan string, otherString string) {
+	toEng <- "move " + otherString
 }
 
 func handlePosition(toEng chan string, otherString string) {
