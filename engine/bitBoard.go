@@ -11,7 +11,9 @@ const (
 
 	lineDelim string = "  ├───┼───┼───┼───┼───┼───┼───┼───┤"
 
-	lastLine string = "  └───┴───┴───┴───┴───┴───┴───┴───┘"
+	lastLine    string = "  └───┴───┴───┴───┴───┴───┴───┴───┘"
+	colorNone   string = "\033[0m"
+	colorYellow string = "\033[1;33m"
 )
 
 // Iinitializes the chess board with the starting positions of the pieces.
@@ -37,42 +39,47 @@ func (b *Board) Initialize() {
 
 // Print prints the chess board to the console.
 // It takes a boolean as input to determine if the board should be printed from the perspective of the white player.
-func (b *Board) Print(isWhite bool) {
+func (b *Board) PrintBoard(isWhite bool, bestMov uint64) {
 	if isWhite {
 		var i uint64
 		v := 8
 		fmt.Println(firstLine)
 		for i = 0x8000000000000000; i > 0; i >>= 1 {
+			print(colorNone)
 			if i&leftEdge != 0 {
 				fmt.Print(v, " ")
 				v--
 			}
+			fmt.Printf("│ ")
+			if i&bestMov != 0 {
+				print(colorYellow)
+			}
 			if b.whitePawns&i != 0 {
-				fmt.Printf("│ P ")
+				fmt.Printf("P ")
 			} else if b.whiteKnights&i != 0 {
-				fmt.Printf("│ N ")
+				fmt.Printf("N ")
 			} else if b.whiteBishops&i != 0 {
-				fmt.Printf("│ B ")
+				fmt.Printf("B ")
 			} else if b.whiteRooks&i != 0 {
-				fmt.Printf("│ R ")
+				fmt.Printf("R ")
 			} else if b.whiteQueens&i != 0 {
-				fmt.Printf("│ Q ")
+				fmt.Printf("Q ")
 			} else if b.whiteKing&i != 0 {
-				fmt.Printf("│ K ")
+				fmt.Printf("K ")
 			} else if b.blackPawns&i != 0 {
-				fmt.Printf("│ p ")
+				fmt.Printf("p ")
 			} else if b.blackKnights&i != 0 {
-				fmt.Printf("│ n ")
+				fmt.Printf("n ")
 			} else if b.blackBishops&i != 0 {
-				fmt.Printf("│ b ")
+				fmt.Printf("b ")
 			} else if b.blackRooks&i != 0 {
-				fmt.Printf("│ r ")
+				fmt.Printf("r ")
 			} else if b.blackQueens&i != 0 {
-				fmt.Printf("│ q ")
+				fmt.Printf("q ")
 			} else if b.blackKing&i != 0 {
-				fmt.Printf("│ k ")
+				fmt.Printf("k ")
 			} else {
-				fmt.Printf("│   ")
+				fmt.Printf("  ")
 			}
 			if i&rightEdge != 0 {
 				fmt.Println("│")
@@ -91,35 +98,39 @@ func (b *Board) Print(isWhite bool) {
 		var i uint64
 		v := 1
 		for i = 1; i <= 0x8000000000000000; i <<= 1 {
+			print(colorNone)
 			if i&rightEdge != 0 {
 				fmt.Print(v, " ")
 				v++
 			}
-			fmt.Printf("")
+			fmt.Printf("│ ")
+			if i&bestMov != 0 {
+				print(colorYellow)
+			}
 			if b.whitePawns&i != 0 {
-				fmt.Printf("│ P ")
+				fmt.Printf("P ")
 			} else if b.whiteKnights&i != 0 {
-				fmt.Printf("│ N ")
+				fmt.Printf("N ")
 			} else if b.whiteBishops&i != 0 {
-				fmt.Printf("│ B ")
+				fmt.Printf("B ")
 			} else if b.whiteRooks&i != 0 {
-				fmt.Printf("│ R ")
+				fmt.Printf("R ")
 			} else if b.whiteQueens&i != 0 {
-				fmt.Printf("│ Q ")
+				fmt.Printf("Q ")
 			} else if b.whiteKing&i != 0 {
-				fmt.Printf("│ K ")
+				fmt.Printf("K ")
 			} else if b.blackPawns&i != 0 {
-				fmt.Printf("│ p ")
+				fmt.Printf("p ")
 			} else if b.blackKnights&i != 0 {
-				fmt.Printf("│ n ")
+				fmt.Printf("n ")
 			} else if b.blackBishops&i != 0 {
-				fmt.Printf("│ b ")
+				fmt.Printf("b ")
 			} else if b.blackRooks&i != 0 {
-				fmt.Printf("│ r ")
+				fmt.Printf("r ")
 			} else if b.blackQueens&i != 0 {
-				fmt.Printf("│ q ")
+				fmt.Printf("q ")
 			} else if b.blackKing&i != 0 {
-				fmt.Printf("│ k ")
+				fmt.Printf("k ")
 			} else {
 				fmt.Printf("│   ")
 			}
@@ -219,5 +230,5 @@ func test() {
 			}
 		}
 	}
-	b.Print(true)
+	b.PrintBoard(true, 0)
 }

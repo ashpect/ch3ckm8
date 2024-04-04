@@ -32,7 +32,7 @@ func engine() (frEng chan string, toEng chan string) {
 				var b Board
 				b.Initialize()
 				mainBoard = b
-				mainBoard.Print(true)
+				mainBoard.PrintBoard(true, 0)
 				frEng <- "new board initialized, you are playing white"
 			case "b":
 				var b Board
@@ -46,7 +46,7 @@ func engine() (frEng chan string, toEng chan string) {
 				randomNumber := rand.Intn(2)
 				randomBool := randomNumber == 1
 				mainBoard = b
-				mainBoard.Print(randomBool)
+				mainBoard.PrintBoard(randomBool, 0)
 				frEng <- "new board initialized, you are playing "
 			case "eval":
 				mainBoard.showEvalScore()
@@ -54,7 +54,7 @@ func engine() (frEng chan string, toEng chan string) {
 				if strings.HasPrefix(cmd, "fen ") {
 					otherString := strings.TrimPrefix(cmd, "fen ")
 					mainBoard = parse(otherString)
-					mainBoard.Print(true)
+					mainBoard.PrintBoard(true, 0)
 
 				} else if strings.HasPrefix(cmd, "move ") {
 					otherString := strings.TrimPrefix(cmd, "move ")
@@ -73,11 +73,11 @@ func (b *Board) handleMove(move string) string {
 	piece, initPos64, finalPos64 := b.notationToMove(move)
 	colour := b.getColour(initPos64)
 	_, _ = b.makeMove(initPos64, finalPos64, colour, piece)
-	b.Print(colour)
+	b.PrintBoard(colour, finalPos64)
 	_, bestMove := b.alphaBetaMiniMax(!colour, math.Inf(-1), math.Inf(1), depth)
 	var pieceType PieceType = b.getPieceType(bestMove[0])
 	wasPieceCaptured, _ := b.makeMove(bestMove[0], bestMove[1], !colour, pieceType)
-	b.Print(colour)
+	b.PrintBoard(colour, bestMove[1])
 	if b.isCheckmate(!colour) {
 		fmt.Println("Bot Wins!")
 	} else if b.isCheckmate(colour) {
@@ -89,12 +89,12 @@ func (b *Board) handleMove(move string) string {
 }
 
 func (b *Board) startWhite() string {
-	b.Print(false)
+	b.PrintBoard(false, 0)
 
 	_, bestMove := b.alphaBetaMiniMax(true, math.Inf(-1), math.Inf(1), depth)
 	responseMove := b.moveToNotation(true, bestMove[0], bestMove[1], b.getPieceType(bestMove[0]), false)
 	_, _ = b.makeMove(bestMove[0], bestMove[1], true, b.getPieceType(bestMove[0]))
-	b.Print(false)
+	b.PrintBoard(false, 0)
 	if b.isCheckmate(true) {
 		fmt.Println("Bot Wins!")
 	} else if b.isCheckmate(false) {
