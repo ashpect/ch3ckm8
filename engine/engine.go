@@ -8,10 +8,11 @@ import (
 )
 
 const (
-	depth int = 5
+	searchDepth int = 5
 )
 
 var mainBoard Board
+var moveHistory []string
 
 func engine() (frEng chan string, toEng chan string) {
 	tell("Hello from engine")
@@ -77,12 +78,12 @@ func (b *Board) handleMove(move string) string {
 		return "Illegal Move"
 	}
 	_, _ = b.makeMove(initPos64, finalPos64, colour, piece)
-
+	moveHistory = append(moveHistory, move+" ")
 	b.PrintBoard(colour, finalPos64)
-	_, bestMove := b.alphaBetaMiniMax(!colour, math.Inf(-1), math.Inf(1), depth)
+	_, bestMove := b.alphaBetaMiniMax(!colour, math.Inf(-1), math.Inf(1), searchDepth)
 	var pieceType PieceType = b.getPieceType(bestMove[0])
 	wasPieceCaptured, _ := b.makeMove(bestMove[0], bestMove[1], !colour, pieceType)
-	
+
 	b.PrintBoard(colour, bestMove[1])
 
 	if b.isCheckmate(!colour) {
@@ -98,7 +99,7 @@ func (b *Board) handleMove(move string) string {
 func (b *Board) startWhite() string {
 	b.PrintBoard(false, 0)
 
-	_, bestMove := b.alphaBetaMiniMax(true, math.Inf(-1), math.Inf(1), depth)
+	_, bestMove := b.alphaBetaMiniMax(true, math.Inf(-1), math.Inf(1), searchDepth)
 	responseMove := b.moveToNotation(true, bestMove[0], bestMove[1], b.getPieceType(bestMove[0]), false)
 	_, _ = b.makeMove(bestMove[0], bestMove[1], true, b.getPieceType(bestMove[0]))
 	b.PrintBoard(false, 0)
