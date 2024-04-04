@@ -6,7 +6,7 @@ import (
 )
 
 func (b *Board) alphaBetaMiniMax(isWhite bool, depth int) (float64, [2]uint64) {
-	if depth == 0 || b.isCheckmate() {
+	if depth == 0 {
 		a, c := b.eval()
 		return a + c, [2]uint64{0, 0}
 	}
@@ -14,12 +14,17 @@ func (b *Board) alphaBetaMiniMax(isWhite bool, depth int) (float64, [2]uint64) {
 		maxEval := math.Inf(-1)
 		bestMove := [2]uint64{0, 0}
 		for _, move := range b.getAllLegalMoves(isWhite) {
-			wasPieceCaptured, capturedPieceType := b.makeMove(move[0], move[1], isWhite, b.getPieceType(move[0]))
-			eval, _ := b.alphaBetaMiniMax(!isWhite, depth-1)
-			b.unmakeMove(move[0], move[1], isWhite, wasPieceCaptured, capturedPieceType)
-			if eval > maxEval {
-				maxEval = eval
-				bestMove = move
+			for i := 0; i < 64; i++ {
+				var cur_pos uint64 = 1 << uint64(i)
+				if move[1]&cur_pos != 0 {
+					wasPieceCaptured, capturedPieceType := b.makeMove(move[0], cur_pos, isWhite, b.getPieceType(move[0]))
+					eval, _ := b.alphaBetaMiniMax(!isWhite, depth-1)
+					b.unmakeMove(move[0], cur_pos, isWhite, wasPieceCaptured, capturedPieceType)
+					if eval > maxEval {
+						maxEval = eval
+						bestMove = [2]uint64{move[0], cur_pos}
+					}
+				}
 			}
 
 		}
@@ -28,23 +33,35 @@ func (b *Board) alphaBetaMiniMax(isWhite bool, depth int) (float64, [2]uint64) {
 		minEval := math.Inf(1)
 		bestMove := [2]uint64{0, 0}
 		for _, move := range b.getAllLegalMoves(isWhite) {
-			wasPieceCaptured, capturedPieceType := b.makeMove(move[0], move[1], isWhite, b.getPieceType(move[0]))
-			eval, _ := b.alphaBetaMiniMax(!isWhite, depth-1)
-			b.unmakeMove(move[0], move[1], isWhite, wasPieceCaptured, capturedPieceType)
-			if eval < minEval {
-				minEval = eval
-				bestMove = move
+			for i := 0; i < 64; i++ {
+				var cur_pos uint64 = 1 << uint64(i)
+				if move[1]&cur_pos != 0 {
+					wasPieceCaptured, capturedPieceType := b.makeMove(move[0], cur_pos, isWhite, b.getPieceType(move[0]))
+					eval, _ := b.alphaBetaMiniMax(!isWhite, depth-1)
+					b.unmakeMove(move[0], cur_pos, isWhite, wasPieceCaptured, capturedPieceType)
+					if eval < minEval {
+						minEval = eval
+						bestMove = [2]uint64{move[0], cur_pos}
+
+					}
+				}
 			}
+
 		}
 		return minEval, bestMove
 	}
 
 }
 
-func (b *Board) searchToMove( moves [2]uint64) string {
+func (b *Board) searchToMove(isWhite bool, moves [2]uint64) string {
+
 	initPiece := b.piecePosToNotation(moves[0])
 	initPos := b.posToNotation(moves[0])
 	finalPos := b.posToNotation(moves[1])
+	if !isWhite {
+		initPos = flipNotation(initPos)
+		finalPos = flipNotation(finalPos)
+	}
 
 	return initPiece + initPos + finalPos
 }

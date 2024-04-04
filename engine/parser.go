@@ -68,9 +68,7 @@ func parse(fen string) Board {
 	return b
 }
 
-func (b *Board) getColour(pos uint64) bool {
-	return pos&b.whitePieces != 0
-}
+
 
 func (b *Board) piecePosToNotation(pos uint64) string {
 
@@ -78,8 +76,10 @@ func (b *Board) piecePosToNotation(pos uint64) string {
 	isWhite := b.getColour(pos)
 	var base_string string = ""
 	switch pieceType {
-	case Pawn:
+	case NoPiece:
 		base_string = ""
+	case Pawn:
+		base_string = "P"
 	case Knight:
 		base_string = "N"
 	case Bishop:
@@ -109,6 +109,12 @@ func (b *Board) posToNotation(pos uint64) string {
 		}
 	}
 	return posNotation
+}
+
+func flipNotation(notation string) string {
+	file := int(notation[0] - 97)
+	rank := int(notation[1] - 49)
+	return string(rune(97+7-file)) + string(rune(49+7-rank))
 }
 
 func (b *Board) notationToPos(notation string) uint64 {

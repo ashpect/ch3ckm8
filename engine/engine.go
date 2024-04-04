@@ -67,9 +67,11 @@ func (b *Board) handleMove(move string) string {
 	piece, initPos64, finalPos64 := b.moveToSearch(move)
 	colour := b.getColour(initPos64)
 	_, _ = b.makeMove(initPos64, finalPos64, colour, piece)
-	b.Print(true)
-	_, bestmove := b.alphaBetaMiniMax(!colour, 6)
-	responseMove := b.searchToMove(bestmove)
+	b.Print(colour)
+	_, bestMove := b.alphaBetaMiniMax(!colour, 4)
+	responseMove := b.searchToMove(colour, bestMove)
+	_, _ = b.makeMove(bestMove[0], bestMove[1], !colour, b.getPieceType(bestMove[0]))
+	b.Print(colour)
 	return responseMove
 }
 

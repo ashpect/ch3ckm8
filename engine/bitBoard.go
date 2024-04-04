@@ -25,6 +25,8 @@ func (b *Board) Initialize() {
 	b.allPieces = 0xFFFF00000000FFFF
 }
 
+// Print prints the chess board to the console.
+// It takes a boolean as input to determine if the board should be printed from the perspective of the white player.
 func (b *Board) Print(isWhite bool) {
 	if isWhite {
 		var i uint64
@@ -102,6 +104,7 @@ func (b *Board) Print(isWhite bool) {
 	}
 }
 
+// printBitBoard prints a given uint64 as a chess board.
 func printBitBoard(bitBoard uint64) {
 	var i uint64
 	for i = 0x8000000000000000; i > 0; i >>= 1 {
@@ -117,10 +120,12 @@ func printBitBoard(bitBoard uint64) {
 	fmt.Println()
 }
 
-// getPieceType returns the type of a given piece on the chess board.
-// It takes a piece and a pointer to the Board struct as input.
-// It checks the piece against the bitboards of each piece type and returns the corresponding PieceType.
-// If the piece does not match any of the bitboards, it returns 0.
+// getColour returns the colour of the piece at a given position.
+func (b *Board) getColour(pos uint64) bool {
+	return pos&b.whitePieces != 0
+}
+
+// getPieceType returns the type of the piece at a given position.
 func (b *Board) getPieceType(pos uint64) PieceType {
 	if pos&b.whitePawns != 0 || pos&b.blackPawns != 0 {
 		return Pawn
@@ -135,9 +140,10 @@ func (b *Board) getPieceType(pos uint64) PieceType {
 	} else if pos&b.whiteKing != 0 || pos&b.blackKing != 0 {
 		return King
 	}
-	return 0
+	return NoPiece
 }
 
+// check if a king is currently under attack
 func (b *Board) isCheck(isWhite bool) bool {
 	oppMoves := b.getAllMoves(!isWhite)
 	var kingPos uint64
@@ -179,7 +185,10 @@ func test() {
 	fmt.Println(n_moves)
 }
 
-// check if the game has end or not
-func (b *Board) isCheckmate() bool {
+// check if the game has ended or not
+func (b *Board) isCheckmate(isWhite bool) bool {
+	if b.isCheck(isWhite) {
+		return len(b.getAllLegalMoves(isWhite)) == 0
+	}
 	return false
 }
