@@ -40,6 +40,7 @@ func engine() (frEng chan string, toEng chan string) {
 				mainBoard = b
 				mainBoard.Print(false)
 				frEng <- "new board initialized, you are playing black"
+
 			case "random":
 				var b Board
 				b.Initialize()
@@ -80,6 +81,22 @@ func (b *Board) handleMove(move string) string {
 	if b.isCheckmate(!colour) {
 		fmt.Println("Bot Wins!")
 	} else if b.isCheckmate(colour) {
+		fmt.Println("Bot Loses!")
+	}
+
+	return responseMove
+}
+
+func (b *Board) startWhite() string {
+	b.Print(false)
+
+	_, bestMove := b.alphaBetaMiniMax(true, math.Inf(-1), math.Inf(1), depth)
+	responseMove := b.searchToMove(false, bestMove)
+	_, _ = b.makeMove(bestMove[0], bestMove[1], true, b.getPieceType(bestMove[0]))
+	b.Print(false)
+	if b.isCheckmate(true) {
+		fmt.Println("Bot Wins!")
+	} else if b.isCheckmate(false) {
 		fmt.Println("Bot Loses!")
 	}
 
