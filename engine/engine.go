@@ -86,9 +86,9 @@ func (b *Board) handleMove(move string) string {
 
 	b.PrintBoard(colour, bestMove[1])
 
-	if b.isCheckmate(!colour) {
+	if b.isCheckmate(colour) {
 		fmt.Println("Bot Wins!")
-	} else if b.isCheckmate(colour) {
+	} else if b.isCheckmate(!colour) {
 		fmt.Println("Bot Loses!")
 	}
 

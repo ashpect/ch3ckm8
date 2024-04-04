@@ -176,7 +176,6 @@ func (b *Board) isCheck(isWhite bool) bool {
 // check if the game has ended or not
 func (b *Board) isCheckmate(isWhite bool) bool {
 	if b.isCheck(isWhite) {
-		fmt.Println(b.getAllLegalMoves(isWhite))
 		if len(b.getAllLegalMoves(isWhite)) == 0 {
 			return true
 		}
