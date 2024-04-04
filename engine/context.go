@@ -12,7 +12,6 @@ type Board struct {
 	whiteQueens    uint64
 	whiteKing      uint64
 	whitePieces    uint64
-	canWhiteCastle bool
 
 	blackPawns     uint64
 	blackKnights   uint64
@@ -21,7 +20,6 @@ type Board struct {
 	blackQueens    uint64
 	blackKing      uint64
 	blackPieces    uint64
-	canBlackCastle bool
 
 	allPieces uint64
 }
@@ -58,6 +56,7 @@ const (
 	Rook
 	Queen
 	King
+	NoPiece
 
 	pawn_wt   = 100
 	knight_wt = 320
