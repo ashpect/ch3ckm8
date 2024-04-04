@@ -94,9 +94,9 @@ func (b *Board) PrintBoard(isWhite bool, bestMov uint64) {
 		fmt.Println(vertLine1)
 		fmt.Println()
 	} else {
-		fmt.Println(firstLine)
 		var i uint64
 		v := 1
+		fmt.Println(firstLine)
 		for i = 1; i <= 0x8000000000000000; i <<= 1 {
 			print(colorNone)
 			if i&rightEdge != 0 {
@@ -132,7 +132,7 @@ func (b *Board) PrintBoard(isWhite bool, bestMov uint64) {
 			} else if b.blackKing&i != 0 {
 				fmt.Printf("k ")
 			} else {
-				fmt.Printf("│   ")
+				fmt.Printf("  ")
 			}
 			if i&leftEdge != 0 {
 				fmt.Println("│")
