@@ -1,25 +1,25 @@
 package engine
 
 // PieceType represents the type of a chess piece.
-type PieceType int
+type PieceType rune
 
 // Board represents the state of the chess board.
 type Board struct {
-	whitePawns     uint64
-	whiteKnights   uint64
-	whiteBishops   uint64
-	whiteRooks     uint64
-	whiteQueens    uint64
-	whiteKing      uint64
-	whitePieces    uint64
+	whitePawns   uint64
+	whiteKnights uint64
+	whiteBishops uint64
+	whiteRooks   uint64
+	whiteQueens  uint64
+	whiteKing    uint64
+	whitePieces  uint64
 
-	blackPawns     uint64
-	blackKnights   uint64
-	blackBishops   uint64
-	blackRooks     uint64
-	blackQueens    uint64
-	blackKing      uint64
-	blackPieces    uint64
+	blackPawns   uint64
+	blackKnights uint64
+	blackBishops uint64
+	blackRooks   uint64
+	blackQueens  uint64
+	blackKing    uint64
+	blackPieces  uint64
 
 	allPieces uint64
 }
@@ -50,13 +50,13 @@ const (
 	straightDirs uint8 = backDir | rightDir | leftDir | forwardDir
 	allDirs      uint8 = diagDirs | straightDirs
 
-	Pawn PieceType = iota + 1
-	Knight
-	Bishop
-	Rook
-	Queen
-	King
-	NoPiece
+	Pawn    PieceType = 'P'
+	Knight            = 'N'
+	Bishop            = 'B'
+	Rook              = 'R'
+	Queen             = 'Q'
+	King              = 'K'
+	NoPiece           = ' '
 
 	pawn_wt   = 100
 	knight_wt = 320

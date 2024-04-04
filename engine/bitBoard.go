@@ -95,6 +95,7 @@ func (b *Board) Print(isWhite bool) {
 				fmt.Print(v, " ")
 				v++
 			}
+			fmt.Printf("")
 			if b.whitePawns&i != 0 {
 				fmt.Printf("│ P ")
 			} else if b.whiteKnights&i != 0 {
