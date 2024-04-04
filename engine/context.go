@@ -51,12 +51,12 @@ const (
 	allDirs      uint8 = diagDirs | straightDirs
 
 	Pawn    PieceType = 'P'
-	Knight            = 'N'
-	Bishop            = 'B'
-	Rook              = 'R'
-	Queen             = 'Q'
-	King              = 'K'
-	NoPiece           = ' '
+	Knight  PieceType = 'N'
+	Bishop  PieceType = 'B'
+	Rook    PieceType = 'R'
+	Queen   PieceType = 'Q'
+	King    PieceType = 'K'
+	NoPiece PieceType = ' '
 
 	pawn_wt   = 100
 	knight_wt = 320

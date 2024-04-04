@@ -69,29 +69,8 @@ func parse(fen string) Board {
 
 func (b *Board) piecePosToNotation(pos uint64) string {
 
-	pieceType := b.getPieceType(pos)
-	isWhite := b.getColour(pos)
-	var base_string string = ""
-	switch pieceType {
-	case NoPiece:
-		base_string = ""
-	case Pawn:
-		base_string = "P"
-	case Knight:
-		base_string = "N"
-	case Bishop:
-		base_string = "B"
-	case Rook:
-		base_string = "R"
-	case Queen:
-		base_string = "Q"
-	case King:
-		base_string = "K"
-	}
-	if !isWhite {
-		base_string = strings.ToLower(base_string)
-	}
-	return base_string
+	return string(rune(b.getPieceType(pos)))
+
 }
 
 func (b *Board) posToNotation(pos uint64) string {
@@ -121,20 +100,20 @@ func (b *Board) notationToPos(notation string) uint64 {
 	return 1 << pos
 }
 
-func (b *Board) notationToPieceType(notation string) PieceType {
-	switch strings.ToUpper(notation) {
-	case "P":
-		return Pawn
-	case "N":
-		return Knight
-	case "B":
-		return Bishop
-	case "R":
-		return Rook
-	case "Q":
-		return Queen
-	case "K":
-		return King
+func (b *Board) notationToMove(notation string) (PieceType, uint64, uint64) {
+	return PieceType(rune(notation[0])), b.notationToPos(notation[1:3]), b.notationToPos(notation[4:])
+}
+
+func (b *Board) moveToNotation(isWhite bool, initPos, finalPos uint64, pieceType PieceType, wasPieceCaptured bool) string {
+	initPosNot := b.posToNotation(initPos)
+	finalPosNot := b.posToNotation(finalPos)
+	if !isWhite {
+		initPosNot = flipNotation(initPosNot)
+		finalPosNot = flipNotation(finalPosNot)
 	}
-	return NoPiece
+	var sep string = "-"
+	if wasPieceCaptured {
+		sep = "x"
+	}
+	return string(rune(pieceType)) + initPosNot + sep + finalPosNot
 }

@@ -69,13 +69,14 @@ func engine() (frEng chan string, toEng chan string) {
 }
 
 func (b *Board) handleMove(move string) string {
-	piece, initPos64, finalPos64 := b.moveToSearch(move)
+
+	piece, initPos64, finalPos64 := b.notationToMove(move)
 	colour := b.getColour(initPos64)
 	_, _ = b.makeMove(initPos64, finalPos64, colour, piece)
 	b.Print(colour)
 	_, bestMove := b.alphaBetaMiniMax(!colour, math.Inf(-1), math.Inf(1), depth)
-	responseMove := b.searchToMove(colour, bestMove)
-	_, _ = b.makeMove(bestMove[0], bestMove[1], !colour, b.getPieceType(bestMove[0]))
+	var pieceType PieceType = b.getPieceType(bestMove[0])
+	wasPieceCaptured, _ := b.makeMove(bestMove[0], bestMove[1], !colour, pieceType)
 	b.Print(colour)
 	if b.isCheckmate(!colour) {
 		fmt.Println("Bot Wins!")
@@ -83,6 +84,7 @@ func (b *Board) handleMove(move string) string {
 		fmt.Println("Bot Loses!")
 	}
 
+	responseMove := b.moveToNotation(colour, bestMove[0], bestMove[1], pieceType, wasPieceCaptured)
 	return responseMove
 }
 

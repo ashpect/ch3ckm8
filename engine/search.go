@@ -96,9 +96,8 @@ func (b *Board) moveToSearch(move string) (PieceType, uint64, uint64) {
 
 	fmt.Println(initPiece, initPos, finalPos)
 
-	piece := b.notationToPieceType(initPiece)
 	initPos64 := b.notationToPos(initPos)
 	finalPos64 := b.notationToPos(finalPos)
 
-	return piece, initPos64, finalPos64
+	return PieceType(initPiece[0]), initPos64, finalPos64
 }
