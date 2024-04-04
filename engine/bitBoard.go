@@ -5,11 +5,11 @@ import (
 )
 
 const (
-	firstLine string = "┌───────────────────────────────┐"
+	firstLine string = "┌───┬───┬───┬───┬───┬───┬───┬───┐"
 
 	lineDelim string = "├───┼───┼───┼───┼───┼───┼───┼───┤"
 
-	lastLine string = "└───────────────────────────────┘"
+	lastLine string = "└───┴───┴───┴───┴───┴───┴───┴───┘"
 )
 
 // Iinitializes the chess board with the starting positions of the pieces.

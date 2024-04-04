@@ -27,23 +27,22 @@ func (b *Board) Empty() {
 	b.allPieces = 0x0000000000000000
 }
 
-var isWhite bool = false
-
 func parse(fen string) Board {
 
 	var b Board
 	b.Empty()
+	var isWhite bool = false
 
-	// test fen = "2k1r1r1/p2q1p2/B1p5/3b3p/3Q4/5PP1/PP3K1P/R2R4 b - - 1 22"
-
-	a := strings.Split(fen, " ")
+	a := strings.Split(fen, " ")[0]
 	var curpos int = 63
-	for i := 0; i < len(a[0]); i++ {
-		chr := a[0][i]
-		var pos uint64 = 1 << curpos
+	for i := 0; i < len(a); i++ {
+		chr := a[i]
+		var pos uint64 = 1 << uint64(curpos)
 		if unicode.IsDigit(rune(chr)) || unicode.IsLetter(rune(chr)) {
 			if chr >= 65 && chr <= 90 {
 				isWhite = true
+			} else {
+				isWhite = false
 			}
 			if unicode.ToLower(rune(chr)) == 'p' {
 				b.movePiece(0, pos, Pawn, isWhite)
@@ -67,8 +66,6 @@ func parse(fen string) Board {
 	}
 	return b
 }
-
-
 
 func (b *Board) piecePosToNotation(pos uint64) string {
 
