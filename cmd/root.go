@@ -1,16 +1,14 @@
 /*
 Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 )
-
-
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -36,6 +34,10 @@ func Execute() {
 	}
 }
 
+const colorRed = "\033[0;31m"
+const colorNone = "\033[0m"
+const colorYellow = "\033[1;33m"
+
 func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
@@ -45,7 +47,15 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
+	fmt.Printf("\033[2J")
+	fmt.Println(colorYellow, "									    WELCOME TO									", colorNone)
+	fmt.Println(colorRed, "						    ______  __    __   ____     ______  __  ___ .___  ___.   ___   ", colorNone)
+	fmt.Println(colorRed, "						   /      ||  |  |  | |___ \\   /      ||  |/  / |   \\/   |  / _ \\  ", colorNone)
+	fmt.Println(colorRed, "						  |  ,----'|  |__|  |   __) | |  ,----'|  '  /  |  \\  /  | | (_) | ", colorNone)
+	fmt.Println(colorRed, "						  |  |     |   __   |  |__ <  |  |     |    <   |  |\\/|  |  > _ <  ", colorNone)
+	fmt.Println(colorRed, "						  |  `----.|  |  |  |  ___) | |  `----.|  .  \\  |  |  |  | | (_) | ", colorNone)
+	fmt.Println(colorRed, "						   \\______||__|  |__| |____/   \\______||__|\\__\\ |__|  |__|  \\___/  ", colorNone)
+
+	fmt.Println()
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
-
-
