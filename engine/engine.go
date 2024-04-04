@@ -92,7 +92,7 @@ func (b *Board) startWhite() string {
 	b.Print(false)
 
 	_, bestMove := b.alphaBetaMiniMax(true, math.Inf(-1), math.Inf(1), depth)
-	responseMove := b.searchToMove(false, bestMove)
+	responseMove := b.moveToNotation(true, bestMove[0], bestMove[1], b.getPieceType(bestMove[0]), false)
 	_, _ = b.makeMove(bestMove[0], bestMove[1], true, b.getPieceType(bestMove[0]))
 	b.Print(false)
 	if b.isCheckmate(true) {

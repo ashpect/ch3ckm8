@@ -1,9 +1,5 @@
 package engine
 
-import (
-	"fmt"
-)
-
 func (b *Board) alphaBetaMiniMax(isWhite bool, alpha, beta float64, depth int) (float64, [2]uint64) {
 	if depth == 0 {
 		a, c := b.eval()
@@ -74,30 +70,4 @@ func (b *Board) alphaBetaMiniMax(isWhite bool, alpha, beta float64, depth int) (
 		return beta, bestMove
 	}
 
-}
-
-func (b *Board) searchToMove(isWhite bool, moves [2]uint64) string {
-
-	initPiece := b.piecePosToNotation(moves[0])
-	initPos := b.posToNotation(moves[0])
-	finalPos := b.posToNotation(moves[1])
-	if !isWhite {
-		initPos = flipNotation(initPos)
-		finalPos = flipNotation(finalPos)
-	}
-
-	return initPiece + initPos + finalPos
-}
-
-func (b *Board) moveToSearch(move string) (PieceType, uint64, uint64) {
-	initPos := move[2:4]
-	finalPos := move[4:6]
-	initPiece := move[0:1]
-
-	fmt.Println(initPiece, initPos, finalPos)
-
-	initPos64 := b.notationToPos(initPos)
-	finalPos64 := b.notationToPos(finalPos)
-
-	return PieceType(initPiece[0]), initPos64, finalPos64
 }
