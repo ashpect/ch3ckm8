@@ -54,8 +54,8 @@ func engine() (frEng chan string, toEng chan string) {
 				} else if strings.HasPrefix(cmd, "move ") {
 					otherString := strings.TrimPrefix(cmd, "move ")
 					fmt.Println(otherString)
-					mainBoard = parse(otherString)
-					mainBoard.handleMove()
+					responseMove := mainBoard.handleMove(otherString)
+					frEng <- responseMove
 				}
 			}
 
@@ -64,8 +64,13 @@ func engine() (frEng chan string, toEng chan string) {
 	return frEng, toEng
 }
 
-func (b *Board) handleMove() {
-	b.Print(true)
+func (b *Board) handleMove(move string) string {
+	piece, initPos64, finalPos64 := b.moveToSearch(move)
+	colour := b.getColour(initPos64)
+	_, _ = b.makeMove(initPos64, finalPos64, !colour, piece)
+	_, bestmove := b.alphaBetaMiniMax(!colour, 2)
+	responseMove := b.searchToMove(bestmove)
+	return responseMove
 }
 
 func (b *Board) showEvalScore() {

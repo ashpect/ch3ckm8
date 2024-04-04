@@ -40,10 +40,22 @@ func (b *Board) alphaBetaMiniMax(isWhite bool, depth int) (float64, [2]uint64) {
 
 }
 
-func (b *Board) searchToMove(moves [2]uint64) string {
+func (b *Board) searchToMove( moves [2]uint64) string {
 	initPiece := b.piecePosToNotation(moves[0])
-	initPos := posToNotation(moves[0])
-	finalPos := posToNotation(moves[1])
+	initPos := b.posToNotation(moves[0])
+	finalPos := b.posToNotation(moves[1])
 
 	return initPiece + initPos + finalPos
+}
+
+func (b *Board) moveToSearch(move string) (PieceType, uint64, uint64) {
+	initPos := move[2:4]
+	finalPos := move[4:6]
+	initPiece := move[0:1]
+
+	piece := b.notationToPieceType(initPiece)
+	initPos64 := b.notationToPos(initPos)
+	finalPos64 := b.notationToPos(finalPos)
+
+	return piece, initPos64, finalPos64
 }
