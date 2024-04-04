@@ -36,7 +36,11 @@ func (b *Board) alphaBetaMiniMax(isWhite bool, depth int) (float64, [2]uint64) {
 
 }
 
-//DO
-func(b *Board) searchToMove(moves [2]uint) (string) {
-	return ""
+func (b *Board) searchToMove(moves [2]uint64) string {
+	a := b.getPieceNotation(moves[0])
+	e := b.getPosNotation(moves[0])
+	c := b.getPieceNotation(moves[1])
+	d := b.getPosNotation(moves[1])
+
+	return a + e + c + d
 }
