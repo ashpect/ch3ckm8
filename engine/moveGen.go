@@ -255,5 +255,11 @@ func (b *Board) getAllLegalMoves(isWhite bool) [][2]uint64 {
 			}
 		}
 	}
-	return allMoves
+	var filteredMoves [][2]uint64
+	for _, move := range allMoves {
+		if move[1] != 0 {
+			filteredMoves = append(filteredMoves, move)
+		}
+	}
+	return filteredMoves
 }

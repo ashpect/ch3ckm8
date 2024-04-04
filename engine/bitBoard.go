@@ -170,14 +170,12 @@ func (b *Board) isCheck(isWhite bool) bool {
 	oppMoves := b.getAllMoves(!isWhite)
 	var kingPos uint64
 	if isWhite {
-		fmt.Println("antshant1")
 		kingPos = b.whiteKing
 	} else {
 		kingPos = b.blackKing
 	}
 	for _, move := range oppMoves {
 		if move[1]&kingPos != 0 {
-			fmt.Println("antshant2")
 			return true
 		}
 	}
@@ -188,7 +186,9 @@ func (b *Board) isCheck(isWhite bool) bool {
 func (b *Board) isCheckmate(isWhite bool) bool {
 	if b.isCheck(isWhite) {
 		fmt.Println(b.getAllLegalMoves(isWhite))
-		return len(b.getAllLegalMoves(isWhite)) == 0
+		if len(b.getAllLegalMoves(isWhite)) == 0 {
+			return true
+		}
 	}
 	return false
 }
