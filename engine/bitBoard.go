@@ -5,11 +5,13 @@ import (
 )
 
 const (
-	firstLine string = "┌───┬───┬───┬───┬───┬───┬───┬───┐"
+	vertLine1 string = "    a   b   c   d   e   f   g   h  "
+	vertLine2 string = "    h   g   f   e   d   c   b   a  "
+	firstLine string = "  ┌───┬───┬───┬───┬───┬───┬───┬───┐"
 
-	lineDelim string = "├───┼───┼───┼───┼───┼───┼───┼───┤"
+	lineDelim string = "  ├───┼───┼───┼───┼───┼───┼───┼───┤"
 
-	lastLine string = "└───┴───┴───┴───┴───┴───┴───┴───┘"
+	lastLine string = "  └───┴───┴───┴───┴───┴───┴───┴───┘"
 )
 
 // Iinitializes the chess board with the starting positions of the pieces.
@@ -38,8 +40,13 @@ func (b *Board) Initialize() {
 func (b *Board) Print(isWhite bool) {
 	if isWhite {
 		var i uint64
+		v := 8
 		fmt.Println(firstLine)
 		for i = 0x8000000000000000; i > 0; i >>= 1 {
+			if i&leftEdge != 0 {
+				fmt.Print(v, " ")
+				v--
+			}
 			if b.whitePawns&i != 0 {
 				fmt.Printf("│ P ")
 			} else if b.whiteKnights&i != 0 {
@@ -77,11 +84,17 @@ func (b *Board) Print(isWhite bool) {
 				}
 			}
 		}
+		fmt.Println(vertLine1)
 		fmt.Println()
 	} else {
 		fmt.Println(firstLine)
 		var i uint64
+		v := 1
 		for i = 1; i <= 0x8000000000000000; i <<= 1 {
+			if i&rightEdge != 0 {
+				fmt.Print(v, " ")
+				v++
+			}
 			if b.whitePawns&i != 0 {
 				fmt.Printf("│ P ")
 			} else if b.whiteKnights&i != 0 {
@@ -122,6 +135,7 @@ func (b *Board) Print(isWhite bool) {
 				break
 			}
 		}
+		fmt.Println(vertLine2)
 		fmt.Println()
 	}
 }
