@@ -2,53 +2,66 @@ package engine
 
 import (
 	"fmt"
-	"math"
 )
 
-func (b *Board) alphaBetaMiniMax(isWhite bool, depth int) (float64, [2]uint64) {
+func (b *Board) alphaBetaMiniMax(isWhite bool, alpha, beta float64, depth int) (float64, [2]uint64) {
 	if depth == 0 {
 		a, c := b.eval()
 		return a + c, [2]uint64{0, 0}
 	}
 	if isWhite {
-		maxEval := math.Inf(-1)
 		bestMove := [2]uint64{0, 0}
 		for _, move := range b.getAllLegalMoves(isWhite) {
+			var to_break bool = false
 			for i := 0; i < 64; i++ {
 				var cur_pos uint64 = 1 << uint64(i)
 				if move[1]&cur_pos != 0 {
 					wasPieceCaptured, capturedPieceType := b.makeMove(move[0], cur_pos, isWhite, b.getPieceType(move[0]))
-					eval, _ := b.alphaBetaMiniMax(!isWhite, depth-1)
+					moveAlpha, _ := b.alphaBetaMiniMax(!isWhite, alpha, beta, depth-1)
 					b.unmakeMove(move[0], cur_pos, isWhite, wasPieceCaptured, capturedPieceType)
-					if eval > maxEval {
-						maxEval = eval
+					if moveAlpha > alpha {
+						alpha = moveAlpha
 						bestMove = [2]uint64{move[0], cur_pos}
+
+					}
+					if beta <= alpha {
+						to_break = true
+						break
 					}
 				}
 			}
+			if to_break {
+				break
+			}
 
 		}
-		return maxEval, bestMove
+		return alpha, bestMove
 	} else {
-		minEval := math.Inf(1)
 		bestMove := [2]uint64{0, 0}
 		for _, move := range b.getAllLegalMoves(isWhite) {
 			for i := 0; i < 64; i++ {
+				var to_break bool = false
 				var cur_pos uint64 = 1 << uint64(i)
 				if move[1]&cur_pos != 0 {
 					wasPieceCaptured, capturedPieceType := b.makeMove(move[0], cur_pos, isWhite, b.getPieceType(move[0]))
-					eval, _ := b.alphaBetaMiniMax(!isWhite, depth-1)
+					moveBeta, _ := b.alphaBetaMiniMax(!isWhite, alpha, beta, depth-1)
 					b.unmakeMove(move[0], cur_pos, isWhite, wasPieceCaptured, capturedPieceType)
-					if eval < minEval {
-						minEval = eval
+					if moveBeta < beta {
+						beta = moveBeta
 						bestMove = [2]uint64{move[0], cur_pos}
-
 					}
+					if beta <= alpha {
+						to_break = true
+						break
+					}
+				}
+				if to_break {
+					break
 				}
 			}
 
 		}
-		return minEval, bestMove
+		return beta, bestMove
 	}
 
 }

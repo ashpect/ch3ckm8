@@ -4,6 +4,14 @@ import (
 	"fmt"
 )
 
+const (
+	firstLine string = "┌───────────────────────────────┐"
+
+	lineDelim string = "├───┼───┼───┼───┼───┼───┼───┼───┤"
+
+	lastLine string = "└───────────────────────────────┘"
+)
+
 // Iinitializes the chess board with the starting positions of the pieces.
 func (b *Board) Initialize() {
 	b.whitePawns = 0x000000000000FF00
@@ -30,71 +38,85 @@ func (b *Board) Initialize() {
 func (b *Board) Print(isWhite bool) {
 	if isWhite {
 		var i uint64
+		fmt.Println(firstLine)
 		for i = 0x8000000000000000; i > 0; i >>= 1 {
 			if b.whitePawns&i != 0 {
-				fmt.Printf("P ")
+				fmt.Printf("│ P ")
 			} else if b.whiteKnights&i != 0 {
-				fmt.Printf("N ")
+				fmt.Printf("│ N ")
 			} else if b.whiteBishops&i != 0 {
-				fmt.Printf("B ")
+				fmt.Printf("│ B ")
 			} else if b.whiteRooks&i != 0 {
-				fmt.Printf("R ")
+				fmt.Printf("│ R ")
 			} else if b.whiteQueens&i != 0 {
-				fmt.Printf("Q ")
+				fmt.Printf("│ Q ")
 			} else if b.whiteKing&i != 0 {
-				fmt.Printf("K ")
+				fmt.Printf("│ K ")
 			} else if b.blackPawns&i != 0 {
-				fmt.Printf("p ")
+				fmt.Printf("│ p ")
 			} else if b.blackKnights&i != 0 {
-				fmt.Printf("n ")
+				fmt.Printf("│ n ")
 			} else if b.blackBishops&i != 0 {
-				fmt.Printf("b ")
+				fmt.Printf("│ b ")
 			} else if b.blackRooks&i != 0 {
-				fmt.Printf("r ")
+				fmt.Printf("│ r ")
 			} else if b.blackQueens&i != 0 {
-				fmt.Printf("q ")
+				fmt.Printf("│ q ")
 			} else if b.blackKing&i != 0 {
-				fmt.Printf("k ")
+				fmt.Printf("│ k ")
 			} else {
-				fmt.Printf(". ")
+				fmt.Printf("│   ")
 			}
 			if i&rightEdge != 0 {
-				fmt.Println()
+				fmt.Println("│")
+				if i&bottomEdge != 0 {
+					fmt.Println(lastLine)
+					break
+				} else {
+					fmt.Println(lineDelim)
+				}
 			}
 		}
 		fmt.Println()
 	} else {
+		fmt.Println(firstLine)
 		var i uint64
 		for i = 1; i <= 0x8000000000000000; i <<= 1 {
 			if b.whitePawns&i != 0 {
-				fmt.Printf("P ")
+				fmt.Printf("│ P ")
 			} else if b.whiteKnights&i != 0 {
-				fmt.Printf("N ")
+				fmt.Printf("│ N ")
 			} else if b.whiteBishops&i != 0 {
-				fmt.Printf("B ")
+				fmt.Printf("│ B ")
 			} else if b.whiteRooks&i != 0 {
-				fmt.Printf("R ")
+				fmt.Printf("│ R ")
 			} else if b.whiteQueens&i != 0 {
-				fmt.Printf("Q ")
+				fmt.Printf("│ Q ")
 			} else if b.whiteKing&i != 0 {
-				fmt.Printf("K ")
+				fmt.Printf("│ K ")
 			} else if b.blackPawns&i != 0 {
-				fmt.Printf("p ")
+				fmt.Printf("│ p ")
 			} else if b.blackKnights&i != 0 {
-				fmt.Printf("n ")
+				fmt.Printf("│ n ")
 			} else if b.blackBishops&i != 0 {
-				fmt.Printf("b ")
+				fmt.Printf("│ b ")
 			} else if b.blackRooks&i != 0 {
-				fmt.Printf("r ")
+				fmt.Printf("│ r ")
 			} else if b.blackQueens&i != 0 {
-				fmt.Printf("q ")
+				fmt.Printf("│ q ")
 			} else if b.blackKing&i != 0 {
-				fmt.Printf("k ")
+				fmt.Printf("│ k ")
 			} else {
-				fmt.Printf(". ")
+				fmt.Printf("│   ")
 			}
 			if i&leftEdge != 0 {
-				fmt.Println()
+				fmt.Println("│")
+				if i&topEdge != 0 {
+					fmt.Println(lastLine)
+					break
+				} else {
+					fmt.Println(lineDelim)
+				}
 			}
 			if i == 0x8000000000000000 {
 				break
@@ -160,29 +182,6 @@ func (b *Board) isCheck(isWhite bool) bool {
 		}
 	}
 	return false
-}
-
-func test() {
-	var b Board
-	b.Initialize()
-	b.Print(true)
-	moves := b.getAllLegalMoves(true)
-	n_moves := 0
-	for _, move := range moves {
-		for i := 0; i < 64; i++ {
-			if move[1]&(1<<uint64(i)) != 0 {
-				wasPieceCaptured, capturePieceType := b.makeMove(move[0], 1<<uint64(i), true, b.getPieceType(move[0]))
-				if wasPieceCaptured {
-					fmt.Println("Captured: ", capturePieceType)
-				}
-				b.Print(true)
-				fmt.Println(b.eval())
-				n_moves++
-				b.unmakeMove(move[0], 1<<uint64(i), true, wasPieceCaptured, capturePieceType)
-			}
-		}
-	}
-	fmt.Println(n_moves)
 }
 
 // check if the game has ended or not
