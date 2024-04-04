@@ -51,11 +51,21 @@ func engine() (frEng chan string, toEng chan string) {
 					fmt.Println(otherString)
 					mainBoard = parse(otherString)
 					mainBoard.Print(true)
+				} else if strings.HasPrefix(cmd, "move ") {
+					otherString := strings.TrimPrefix(cmd, "move ")
+					fmt.Println(otherString)
+					mainBoard = parse(otherString)
+					mainBoard.handleMove()
 				}
 			}
+
 		}
 	}()
 	return frEng, toEng
+}
+
+func (b *Board) handleMove() {
+	b.Print(true)
 }
 
 func (b *Board) showEvalScore() {

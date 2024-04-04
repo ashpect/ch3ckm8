@@ -42,4 +42,3 @@ func (b *Board) getPosNotation(pos uint64) string {
 	}
 	return posNotation
 }
-
