@@ -170,15 +170,15 @@ func (b *Board) isCheck(isWhite bool) bool {
 	oppMoves := b.getAllMoves(!isWhite)
 	var kingPos uint64
 	if isWhite {
+		fmt.Println("antshant1")
 		kingPos = b.whiteKing
 	} else {
 		kingPos = b.blackKing
 	}
 	for _, move := range oppMoves {
-		for i := 0; i < 64; i++ {
-			if move[1]&kingPos != 0 {
-				return true
-			}
+		if move[1]&kingPos != 0 {
+			fmt.Println("antshant2")
+			return true
 		}
 	}
 	return false
@@ -187,7 +187,22 @@ func (b *Board) isCheck(isWhite bool) bool {
 // check if the game has ended or not
 func (b *Board) isCheckmate(isWhite bool) bool {
 	if b.isCheck(isWhite) {
+		fmt.Println(b.getAllLegalMoves(isWhite))
 		return len(b.getAllLegalMoves(isWhite)) == 0
 	}
 	return false
+}
+
+func test() {
+	var b Board = parse("7k/3p3P/4npPK/2N5/8/8/8/8 w - - 0 1")
+	b.makeMove(0x2000000000, 0x080000000000, true, Knight)
+	moves := b.getAllLegalMoves(false)
+	for _, move := range moves {
+		for i := 0; i < 64; i++ {
+			if move[1]&(1<<uint(i)) != 0 {
+				printBitBoard(1 << uint(i))
+			}
+		}
+	}
+	b.Print(true)
 }

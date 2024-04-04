@@ -26,6 +26,7 @@ func engine() (frEng chan string, toEng chan string) {
 			case "quit":
 				break
 			case "test":
+				test()
 				frEng <- "test done"
 			case "w":
 				var b Board
@@ -76,6 +77,12 @@ func (b *Board) handleMove(move string) string {
 	responseMove := b.searchToMove(colour, bestMove)
 	_, _ = b.makeMove(bestMove[0], bestMove[1], !colour, b.getPieceType(bestMove[0]))
 	b.Print(colour)
+	if b.isCheckmate(!colour) {
+		fmt.Println("Bot Wins!")
+	} else if b.isCheckmate(colour) {
+		fmt.Println("Bot Loses!")
+	}
+
 	return responseMove
 }
 

@@ -242,14 +242,14 @@ func (b *Board) getAllMoves(isWhite bool) [][2]uint64 {
 
 func (b *Board) getAllLegalMoves(isWhite bool) [][2]uint64 {
 	allMoves := b.getAllMoves(isWhite)
-	for _, move := range allMoves {
+	for idx, move := range allMoves {
 		for i := 0; i < 64; i++ {
 			var cur_pos uint64
 			cur_pos = 1 << uint64(i)
-			if move[1]&cur_pos != 0 {
+			if allMoves[idx][1]&cur_pos != 0 {
 				wasPieceCaptured, capturedPieceType := b.makeMove(move[0], cur_pos, isWhite, b.getPieceType(move[0]))
 				if b.isCheck(isWhite) {
-					move[1] &= ^cur_pos
+					allMoves[idx][1] &= ^cur_pos
 				}
 				b.unmakeMove(move[0], cur_pos, isWhite, wasPieceCaptured, capturedPieceType)
 			}

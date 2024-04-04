@@ -32,7 +32,7 @@ func parse(fen string) Board {
 	var b Board
 	b.Empty()
 	var isWhite bool = false
-
+	fen = "7k/3p3P/4npPK/2N5/8/8/8/8 w - - 0 1"
 	a := strings.Split(fen, " ")[0]
 	var curpos int = 63
 	for i := 0; i < len(a); i++ {
