@@ -38,7 +38,6 @@ func engine() (frEng chan string, toEng chan string) {
 				var b Board
 				b.Initialize()
 				mainBoard = b
-				mainBoard.Print(false)
 				frEng <- "new board initialized, you are playing black"
 				mainBoard.startWhite()
 			case "random":
