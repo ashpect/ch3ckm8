@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -52,6 +53,8 @@ func (b *Board) moveToSearch(move string) (PieceType, uint64, uint64) {
 	initPos := move[2:4]
 	finalPos := move[4:6]
 	initPiece := move[0:1]
+
+	fmt.Println(initPiece, initPos, finalPos)
 
 	piece := b.notationToPieceType(initPiece)
 	initPos64 := b.notationToPos(initPos)

@@ -99,10 +99,12 @@ func (b *Board) piecePosToNotation(pos uint64) string {
 
 func (b *Board) posToNotation(pos uint64) string {
 	var posNotation string = ""
-	var i uint64
-	for i = 0x8000000000000000; i > 0; i >>= 1 {
-		if pos&i != 0 {
-			posNotation = string(rune(97+(63-i)%8)) + string(rune(49+int((63-i)/8)))
+	for i := 63; i >= 0; i-- {
+		var cur_pos uint64 = 1 << uint64(i)
+		if pos&cur_pos != 0 {
+			file := int((63 - i) % 8)
+			rank := int((i) / 8)
+			posNotation = string(rune(97+file)) + string(rune(49+rank))
 			break
 		}
 	}
@@ -110,7 +112,10 @@ func (b *Board) posToNotation(pos uint64) string {
 }
 
 func (b *Board) notationToPos(notation string) uint64 {
-	return 1 << uint64(int(notation[1]-49)*8+int(7-notation[0]-97))
+	file := int(notation[0] - 97) // columns
+	rank := int(notation[1] - 49) // rows
+	pos := uint64(rank*8 + (7 - file))
+	return 1 << pos
 }
 
 func (b *Board) notationToPieceType(notation string) PieceType {
