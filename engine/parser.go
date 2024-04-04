@@ -32,7 +32,6 @@ func parse(fen string) Board {
 	var b Board
 	b.Empty()
 	var isWhite bool = false
-	fen = "7k/3p3P/4npPK/2N5/8/8/8/8 w - - 0 1"
 	a := strings.Split(fen, " ")[0]
 	var curpos int = 63
 	for i := 0; i < len(a); i++ {
@@ -44,22 +43,12 @@ func parse(fen string) Board {
 			} else {
 				isWhite = false
 			}
-			if unicode.ToLower(rune(chr)) == 'p' {
-				b.movePiece(0, pos, Pawn, isWhite)
-			} else if unicode.ToLower(rune(chr)) == 'r' {
-				b.movePiece(0, pos, Rook, isWhite)
-			} else if unicode.ToLower(rune(chr)) == 'n' {
-				b.movePiece(0, pos, Knight, isWhite)
-			} else if unicode.ToLower(rune(chr)) == 'b' {
-				b.movePiece(0, pos, Bishop, isWhite)
-			} else if unicode.ToLower(rune(chr)) == 'q' {
-				b.movePiece(0, pos, Queen, isWhite)
-			} else if unicode.ToLower(rune(chr)) == 'k' {
-				b.movePiece(0, pos, King, isWhite)
-			} else if chr >= 48 && chr <= 57 {
+			if chr >= 48 && chr <= 57 {
 				num, _ := strconv.Atoi(string(chr))
 				num2 := int(num)
 				curpos -= num2 - 1
+			} else {
+				b.movePiece(0, pos, PieceType(unicode.ToUpper(rune(chr))), isWhite)
 			}
 			curpos--
 		}

@@ -72,12 +72,19 @@ func (b *Board) handleMove(move string) string {
 
 	piece, initPos64, finalPos64 := b.notationToMove(move)
 	colour := b.getColour(initPos64)
+
+	if !b.isMoveLegal(colour, initPos64, finalPos64) {
+		return "Illegal Move"
+	}
 	_, _ = b.makeMove(initPos64, finalPos64, colour, piece)
+
 	b.PrintBoard(colour, finalPos64)
 	_, bestMove := b.alphaBetaMiniMax(!colour, math.Inf(-1), math.Inf(1), depth)
 	var pieceType PieceType = b.getPieceType(bestMove[0])
 	wasPieceCaptured, _ := b.makeMove(bestMove[0], bestMove[1], !colour, pieceType)
+	
 	b.PrintBoard(colour, bestMove[1])
+
 	if b.isCheckmate(!colour) {
 		fmt.Println("Bot Wins!")
 	} else if b.isCheckmate(colour) {
