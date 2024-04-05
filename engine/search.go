@@ -108,8 +108,6 @@ func (b *Board) alphaBetaMiniMax(isWhite bool, alpha, beta float64, depth int) (
 							castleMoveInfo["o-o-o"].CanCastle = true
 						}
 					}
-					//case missing : once king has moved, it should not be able to castle
-					//implemented from user side but resetting down the children's tree not necessaerily fruitful
 
 					if moveBeta < beta {
 						beta = moveBeta
