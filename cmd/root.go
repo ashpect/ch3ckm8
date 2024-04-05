@@ -38,12 +38,14 @@ const colorRed = "\033[0;31m"
 const colorNone = "\033[0m"
 const colorYellow = "\033[1;33m"
 
+var depth int
+
 func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.ch3ckm8.yaml)")
+	rootCmd.PersistentFlags().IntVarP(&depth, "depth", "d", 0, "setup depth")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.

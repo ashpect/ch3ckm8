@@ -7,9 +7,8 @@ import (
 	"strings"
 )
 
-const (
-	searchDepth int = 5
-)
+var searchDepth int = 5
+
 
 var mainBoard Board
 

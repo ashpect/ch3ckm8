@@ -9,10 +9,10 @@ import (
 
 var saveBm = ""
 
-func Uci(frGUI chan string) {
+func Uci(frGUI chan string, depth int) {
 
 	tell("Hello from uci")
-
+	searchDepth = depth
 	frEng, toEng := engine()
 
 	bInfinite := false

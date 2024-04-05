@@ -22,7 +22,14 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("start called")
-		start()
+
+		if depth != 0 {
+			fmt.Println("depth is set to 5")
+			start(depth)
+		} else {
+			fmt.Println("depth not provided, defaulting to 5")
+			start(5)
+		}
 
 	},
 }
@@ -41,6 +48,6 @@ func init() {
 	// startCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func start() {
-	engine.Uci(engine.Input())
+func start(depth int) {
+	engine.Uci(engine.Input(), depth)
 }
