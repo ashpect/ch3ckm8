@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	searchDepth int = 5
+	searchDepth int = 7
 )
 
 var mainBoard Board
@@ -113,7 +113,8 @@ func (b *Board) startWhite() string {
 }
 
 func (b *Board) showEvalScore() {
-	a, c := b.eval()
-	fmt.Printf("Material score: %v", a)
-	fmt.Printf("Position score: %v", c)
+	materialScore, positonalScore := b.eval()
+	fmt.Printf("Material score: %v\n", materialScore)
+	fmt.Printf("Position score: %v\n", positonalScore)
+	fmt.Printf("Mobility score: %v\n", b.evalMobility())
 }

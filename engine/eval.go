@@ -147,3 +147,21 @@ func (b *Board) evalPieceSquareTables(endgameT float64) float64 {
 	}
 	return score
 }
+func (b *Board) evalMobility() float64 {
+	var score float64 = 0
+	for _, move := range b.getAllLegalMoves(true) {
+		for i := 0; i < 64; i++ {
+			if move[1]&(1<<i) != 0 {
+				score += 1
+			}
+		}
+	}
+	for _, move := range b.getAllLegalMoves(false) {
+		for i := 0; i < 64; i++ {
+			if move[1]&(1<<i) != 0 {
+				score -= 1
+			}
+		}
+	}
+	return score
+}
