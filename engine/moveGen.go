@@ -261,6 +261,13 @@ func (b *Board) getAllLegalMoves(isWhite bool) [][2]uint64 {
 			filteredMoves = append(filteredMoves, move)
 		}
 	}
+
+	// // add castling moves to it
+	// castlingMoves := b.getAllCastlingMoves(isWhite)
+	// for _, move := range castlingMoves {
+	// 	filteredMoves = append(filteredMoves, move)
+	// }
+
 	return filteredMoves
 }
 

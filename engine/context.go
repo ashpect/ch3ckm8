@@ -24,6 +24,14 @@ type Board struct {
 	allPieces uint64
 }
 
+type CastleMoveInfo struct {
+	Positions  []string
+	CanCastle  bool
+	RandomMove [2]uint64
+	KingMove string
+	RookMove string
+}
+
 const (
 	bottomEdge       uint64 = 0x00000000000000FF
 	bottomButOneEdge uint64 = 0x000000000000FF00

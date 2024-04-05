@@ -8,10 +8,12 @@ import (
 )
 
 const (
-	searchDepth int = 7
+	searchDepth int = 5
 )
 
 var mainBoard Board
+
+// better design to also store the result of getalllegalmoves and keep updating as this func is called many times.
 var moveHistory []string
 
 func engine() (frEng chan string, toEng chan string) {
@@ -71,6 +73,20 @@ func engine() (frEng chan string, toEng chan string) {
 
 func (b *Board) handleMove(move string) string {
 
+	if b.isCastleMove(move) {
+		submove := castleMoveInfo[move].KingMove[1:3]
+		colour := b.getColour(b.notationToPos(submove))
+		fmt.Println(colour, submove)
+		fmt.Println(castleMoveInfo[move].CanCastle)
+		if b.canCastle(colour, move) {
+			responseMove := b.handleCastleMove(move)
+			castleMoveInfo[move].CanCastle = false
+			return responseMove
+		} else {
+			return "Illegal Move"
+		}
+	}
+
 	piece, initPos64, finalPos64 := b.notationToMove(move)
 	colour := b.getColour(initPos64)
 
@@ -78,8 +94,18 @@ func (b *Board) handleMove(move string) string {
 		return "Illegal Move"
 	}
 	_, _ = b.makeMove(initPos64, finalPos64, colour, piece)
+	updateCastleMoveInfo(move)
 	moveHistory = append(moveHistory, move+" ")
 	b.PrintBoard(colour, finalPos64)
+
+	responseMove := b.getResponseMove(colour)
+	updateCastleMoveInfo(responseMove)
+	// Edge case : when engine plays king in one of its position children and goes back, he can castle cause we are updating here. So, handle that case.
+	// First of all enable for engine the castle move.
+	return responseMove
+}
+
+func (b *Board) getResponseMove(colour bool) string {
 	_, bestMove := b.alphaBetaMiniMax(!colour, math.Inf(-1), math.Inf(1), searchDepth)
 	var pieceType PieceType = b.getPieceType(bestMove[0])
 	wasPieceCaptured, _ := b.makeMove(bestMove[0], bestMove[1], !colour, pieceType)
@@ -96,19 +122,62 @@ func (b *Board) handleMove(move string) string {
 	return responseMove
 }
 
-func (b *Board) startWhite() string {
-	b.PrintBoard(false, 0)
+func (b *Board) handleCastleMove(move string) string {
 
-	_, bestMove := b.alphaBetaMiniMax(true, math.Inf(-1), math.Inf(1), searchDepth)
-	responseMove := b.moveToNotation(true, bestMove[0], bestMove[1], b.getPieceType(bestMove[0]), false)
-	_, _ = b.makeMove(bestMove[0], bestMove[1], true, b.getPieceType(bestMove[0]))
-	b.PrintBoard(false, 0)
-	if b.isCheckmate(true) {
-		fmt.Println("Bot Wins!")
-	} else if b.isCheckmate(false) {
-		fmt.Println("Bot Loses!")
+	kingpiece, kinginitPos64, kingfinalPos64 := b.notationToMove(castleMoveInfo[move].KingMove)
+	colour := b.getColour(kinginitPos64)
+
+	_, _ = b.makeMove(kinginitPos64, kingfinalPos64, colour, kingpiece)
+	moveHistory = append(moveHistory, move+" ")
+
+	rookpiece, rookinitPos64, rookfinalPos64 := b.notationToMove(castleMoveInfo[move].RookMove)
+
+	_, _ = b.makeMove(rookinitPos64, rookfinalPos64, colour, rookpiece)
+	moveHistory = append(moveHistory, move+" ")
+
+	b.PrintBoard(colour, rookfinalPos64)
+
+	responseMove := b.getResponseMove(colour)
+	return responseMove
+}
+
+func updateCastleMoveInfo(move string) {
+
+	if move[0] == 'K' {
+		castleMoveInfo["O-O"].CanCastle = false
+		castleMoveInfo["O-O-O"].CanCastle = false
+	}
+	if move[0] == 'k' {
+		castleMoveInfo["o-o"].CanCastle = false
+		castleMoveInfo["o-o-o"].CanCastle = false
 	}
 
+}
+
+// func (b *Board) makeUserMove(move string) bool {
+// 	piece, initPos64, finalPos64 := b.moveToSearch(move)
+// 	colour := b.getColour(initPos64)
+// 	_, _ = b.makeMove(initPos64, finalPos64, colour, piece)
+// 	b.Print(colour)
+// 	return colour
+// }
+
+// func (b *Board) makeBestMove(isWhite bool) string {
+// 	_, bestMove := b.alphaBetaMiniMax(!isWhite, math.Inf(-1), math.Inf(1), depth)
+// 	responseMove := b.moveToReadableMove(isWhite, bestMove)
+// 	_, _ = b.makeMove(bestMove[0], bestMove[1], !isWhite, b.getPieceType(bestMove[0]))
+// 	return responseMove
+// }
+
+// func (b *Board) startWhite() {
+// 	b.Print(false)
+// 	b.makeBestMove(false)
+// 	b.Print(false)
+// }
+
+func (b *Board) startWhite() string {
+	b.PrintBoard(false, 0)
+	responseMove := b.getResponseMove(false)
 	return responseMove
 }
 

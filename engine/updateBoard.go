@@ -85,6 +85,7 @@ func (b *Board) movePiece(initPos, finalPos uint64, pieceType PieceType, isWhite
 
 // returns a boolean indicating whether a piece was captured during the move and the type of the captured piece.
 func (b *Board) makeMove(initPos, finalPos uint64, isWhite bool, pieceType PieceType) (bool, PieceType) {
+
 	if isWhite {
 		// If a black piece is taken
 		var wasPieceCaptured bool = (finalPos&b.blackPieces != 0)
@@ -109,6 +110,7 @@ func (b *Board) makeMove(initPos, finalPos uint64, isWhite bool, pieceType Piece
 		b.movePiece(initPos, finalPos, pieceType, isWhite)
 		return wasPieceCaptured, capturedPieceType
 	}
+
 }
 
 // unmakeMove takes the initial position, final position, and other parameters of a move and reverts the board state to the previous state.
