@@ -4,18 +4,11 @@ import (
 	"fmt"
 )
 
-var castleMoveMap = map[string][2]uint64{
-	"O-O":   {0x0000000000000090, 0xFFFFFFFFFFFFFFFF}, //white king, e1g1 = O-O
-	"O-O-O": {0x000000000000000E, 0xFFFFFFFFFFFFFF00}, //white queen, e1c1 = O-O-O
-	"o-o":   {0x9000000000000000, 0xFFFFFFFFFFFF0000}, //black king, e8g8 = o-o
-	"o-o-o": {0x0E00000000000000, 0xFFFFFFFFFF000000}, //black queen, e8c8 = o-o-o
-}
-
 var castleMoveInfo = map[string]*CastleMoveInfo{
-	"O-O":   {Positions: []string{"f1", "g1"}, CanCastle: true, RandomMove: castleMoveMap["O-O"], KingMove: "Ke1-g1", RookMove: "Rh1-f1"},   //white king
-	"O-O-O": {Positions: []string{"d1", "c1"}, CanCastle: true, RandomMove: castleMoveMap["O-O-O"], KingMove: "Ke1-c1", RookMove: "Re1-d1"}, //white queen
-	"o-o":   {Positions: []string{"f8", "g8"}, CanCastle: true, RandomMove: castleMoveMap["o-o"], KingMove: "ke8-g8", RookMove: "rh8-f8"},   //black king
-	"o-o-o": {Positions: []string{"d8", "c8"}, CanCastle: true, RandomMove: castleMoveMap["o-o-o"], KingMove: "ke8-g8", RookMove: "ra8-d8"}, //black queen
+	"O-O":   {Positions: []string{"f1", "g1"}, CanCastle: true, RandomMove: [2]uint64{0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF}, KingMove: "Ke1-g1", RookMove: "Rh1-f1"},   //white king
+	"O-O-O": {Positions: []string{"d1", "c1"}, CanCastle: true, RandomMove: [2]uint64{0xFFFFFFFFFFFFFF00, 0xFFFFFFFFFFFFFF00}, KingMove: "Ke1-c1", RookMove: "Re1-d1"}, //white queen
+	"o-o":   {Positions: []string{"f8", "g8"}, CanCastle: true, RandomMove: [2]uint64{0xFFFFFFFFFFFF000, 0xFFFFFFFFFFFF0000}, KingMove: "ke8-g8", RookMove: "rh8-f8"},   //black king
+	"o-o-o": {Positions: []string{"d8", "c8"}, CanCastle: true, RandomMove: [2]uint64{0xFFFFFFFFFF000000, 0xFFFFFFFFFF000000}, KingMove: "ke8-g8", RookMove: "ra8-d8"}, //black queen
 }
 
 func (b *Board) isCastleMove(move string) bool {

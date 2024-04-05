@@ -274,6 +274,10 @@ func (b *Board) getAllLegalMoves(isWhite bool) [][2]uint64 {
 func (b *Board) isMoveLegal(isWhite bool, initPos uint64, finalPos uint64) bool {
 	allMoves := b.getAllLegalMoves(isWhite)
 	for _, move := range allMoves {
+		isCastleMove, _ := checkMoveIsCastle(move)
+		if isCastleMove {
+			continue
+		}
 		if move[0] == initPos && move[1]&finalPos != 0 {
 			return true
 		}

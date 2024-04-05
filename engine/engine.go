@@ -95,7 +95,6 @@ func (b *Board) handleMove(move string) string {
 	}
 	_, _ = b.makeMove(initPos64, finalPos64, colour, piece)
 	updateCastleMoveInfo(move)
-	moveHistory = append(moveHistory, move+" ")
 	b.PrintBoard(colour, finalPos64)
 
 	responseMove := b.getResponseMove(colour)

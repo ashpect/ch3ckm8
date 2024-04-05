@@ -150,6 +150,10 @@ func (b *Board) evalPieceSquareTables(endgameT float64) float64 {
 func (b *Board) evalMobility() float64 {
 	var score float64 = 0
 	for _, move := range b.getAllLegalMoves(true) {
+		isCastleMove, _ := checkMoveIsCastle(move)
+		if isCastleMove {
+			continue
+		}
 		for i := 0; i < 64; i++ {
 			if move[1]&(1<<i) != 0 {
 				score += 1
@@ -157,6 +161,10 @@ func (b *Board) evalMobility() float64 {
 		}
 	}
 	for _, move := range b.getAllLegalMoves(false) {
+		isCastleMove, _ := checkMoveIsCastle(move)
+		if isCastleMove {
+			continue
+		}
 		for i := 0; i < 64; i++ {
 			if move[1]&(1<<i) != 0 {
 				score -= 1
