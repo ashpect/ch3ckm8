@@ -1,7 +1,14 @@
 # ch3ckm8
 
 ## Description
-This is a simple tool to check the status of a website. It will check the status of the website and return the status code. It will also check the SSL certificate and return the expiration date.
+A chess engine which implements:
+
+Bitboards for board representation.
+Alpha-beta pruning for move searching.
+Piece-Square tables for board evaluation.
+Fen String support to load arbitrary games and play them.
+A slice of the Universal Chess Interface (UCI) to allow challenges via lichess.org
+A command-line user interface
 
 ## Usage
 ```bash

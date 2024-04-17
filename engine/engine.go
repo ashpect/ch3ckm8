@@ -7,8 +7,7 @@ import (
 	"strings"
 )
 
-var searchDepth int = 5
-
+var searchDepth int = 6
 
 var mainBoard Board
 
